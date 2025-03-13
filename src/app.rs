@@ -52,6 +52,7 @@ impl eframe::App for HanziApp {
                     egui::Layout::left_to_right(egui::Align::TOP).with_main_justify(true),
                     |ui| {
                         egui::TextEdit::singleline(&mut self.input)
+                            .id(egui::Id::new("hanzi_editor"))
                             .horizontal_align(egui::Align::Center)
                             .text_color(egui::Color32::YELLOW)
                             .margin(egui::Margin::same(16))
@@ -83,6 +84,12 @@ impl eframe::App for HanziApp {
         if ctx.input_mut(|i| i.consume_shortcut(&shortcuts::settings(self.is_macos))) {
             self.toasts
                 .info("This is where the settings will open")
+                .duration(Some(Duration::from_secs(5)))
+                .show_progress_bar(true);
+        }
+        if ctx.input(|i| i.key_pressed(egui::Key::F1)) {
+            self.toasts
+                .info("This is where the help will be displayed")
                 .duration(Some(Duration::from_secs(5)))
                 .show_progress_bar(true);
         }

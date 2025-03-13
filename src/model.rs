@@ -8,9 +8,3 @@ pub(crate) struct Response {
     pub(crate) translation: String,
     pub(crate) pronunciation: String,
 }
-
-impl Request {
-    fn new(model: String, text: String) -> Self {
-        Self { model, text }
-    }
-}

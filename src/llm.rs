@@ -11,8 +11,8 @@ the second element should be labeled 'translation' and contain the translation o
 the third element should be labeled 'pronunciation' and contain the pronunciation for the text
 "#;
 
-pub(crate) async fn _query(
-    ollama: Ollama,
+pub(crate) async fn query(
+    ollama: &Ollama,
     request: model::Request,
 ) -> Result<String, ollama_rs::error::OllamaError> {
     let prompt = format!("{}: {}", PROMPT, request.text);
