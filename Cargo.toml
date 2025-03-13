@@ -1,0 +1,10 @@
+[package]
+name = "hanzi"
+version = "0.1.0"
+edition = "2024"
+license = "MIT OR Apache-2.0"
+authors = ["Gerd Reiss <gerd@reiss.pro>"]
+
+[dependencies]
+eframe = "0.31.1"
+egui = "0.31.1"

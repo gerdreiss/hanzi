@@ -1,0 +1,62 @@
+use eframe::CreationContext;
+use eframe::epaint::text::FontInsert;
+use eframe::epaint::text::InsertFontFamily;
+use egui::Widget;
+
+pub(crate) struct HanziApp {
+    input: String,
+    pinyin: String,
+    translation: String,
+}
+
+impl HanziApp {
+    pub(crate) fn new(cc: &CreationContext<'_>) -> Self {
+        cc.egui_ctx.add_font(FontInsert::new(
+            "Han_Sans_CN_Light",
+            egui::FontData::from_static(include_bytes!("../assets/Source Han Sans CN Light.otf")),
+            vec![
+                InsertFontFamily {
+                    family: egui::FontFamily::Proportional,
+                    priority: egui::epaint::text::FontPriority::Highest,
+                },
+                InsertFontFamily {
+                    family: egui::FontFamily::Monospace,
+                    priority: egui::epaint::text::FontPriority::Lowest,
+                },
+            ],
+        ));
+        Self {
+            input: "学习汉语很有趣!".to_owned(),
+            pinyin: "Xuéxí hànyǔ hěn yǒuqù!".to_owned(),
+            translation: "Learning Chinese is fun!".to_owned(),
+        }
+    }
+}
+
+impl eframe::App for HanziApp {
+    fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
+        egui::CentralPanel::default().show(ctx, |ui| {
+            ui.vertical(|ui| {
+                ui.with_layout(
+                    egui::Layout::left_to_right(egui::Align::TOP).with_main_justify(true),
+                    |ui| {
+                        egui::TextEdit::singleline(&mut self.input)
+                            .horizontal_align(egui::Align::Center)
+                            .text_color(egui::Color32::YELLOW)
+                            .margin(egui::Margin::same(16))
+                            .font(egui::FontId::new(54., egui::FontFamily::Proportional))
+                            .ui(ui)
+                    },
+                );
+                egui::Frame::new().inner_margin(14.).show(ui, |ui| {
+                    ui.columns_const(|[col_1, col_2]| {
+                        col_1.vertical(|ui| ui.label(egui::RichText::new(&self.pinyin).size(28.)));
+                        col_2.vertical(|ui| {
+                            ui.label(egui::RichText::new(&self.translation).size(28.))
+                        });
+                    })
+                });
+            });
+        });
+    }
+}
