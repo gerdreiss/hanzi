@@ -3,6 +3,7 @@ use eframe::epaint::text::FontInsert;
 use eframe::epaint::text::InsertFontFamily;
 use egui::Widget;
 use egui_notify::Toasts;
+use ollama_rs::Ollama;
 use std::time::Duration;
 
 use crate::shortcuts;
@@ -12,6 +13,7 @@ pub(crate) struct HanziApp {
     pinyin: String,
     translation: String,
     toasts: Toasts,
+    ollama: Ollama,
     is_macos: bool,
 }
 
@@ -36,6 +38,7 @@ impl HanziApp {
             pinyin: "Xuéxí hànyǔ hěn yǒuqù!".to_owned(),
             translation: "Learning Chinese is fun!".to_owned(),
             toasts: Toasts::default(),
+            ollama: Ollama::default(),
             is_macos: std::env::consts::OS == "macos",
         }
     }
