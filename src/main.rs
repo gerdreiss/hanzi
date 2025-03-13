@@ -1,4 +1,5 @@
 mod app;
+mod shortcuts;
 
 fn main() -> eframe::Result {
     let options = eframe::NativeOptions {

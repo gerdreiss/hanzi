@@ -5,11 +5,14 @@ use egui::Widget;
 use egui_notify::Toasts;
 use std::time::Duration;
 
+use crate::shortcuts;
+
 pub(crate) struct HanziApp {
     input: String,
     pinyin: String,
     translation: String,
     toasts: Toasts,
+    is_macos: bool,
 }
 
 impl HanziApp {
@@ -33,6 +36,7 @@ impl HanziApp {
             pinyin: "Xuéxí hànyǔ hěn yǒuqù!".to_owned(),
             translation: "Learning Chinese is fun!".to_owned(),
             toasts: Toasts::default(),
+            is_macos: std::env::consts::OS == "macos",
         }
     }
 }
@@ -61,34 +65,19 @@ impl eframe::App for HanziApp {
             });
         });
 
-        if ctx.input_mut(|i| {
-            i.consume_shortcut(&egui::KeyboardShortcut::new(
-                egui::Modifiers::MAC_CMD,
-                egui::Key::S,
-            ))
-        }) {
+        if ctx.input_mut(|i| i.consume_shortcut(&shortcuts::save(self.is_macos))) {
             self.toasts
                 .info("This is where the phrase with pinyin and translation will be saved")
                 .duration(Some(Duration::from_secs(5)))
                 .show_progress_bar(true);
         }
-        if ctx.input_mut(|i| {
-            i.consume_shortcut(&egui::KeyboardShortcut::new(
-                egui::Modifiers::MAC_CMD,
-                egui::Key::F,
-            ))
-        }) {
+        if ctx.input_mut(|i| i.consume_shortcut(&shortcuts::find(self.is_macos))) {
             self.toasts
                 .info("This is where the search for phrases will open")
                 .duration(Some(Duration::from_secs(5)))
                 .show_progress_bar(true);
         }
-        if ctx.input_mut(|i| {
-            i.consume_shortcut(&egui::KeyboardShortcut::new(
-                egui::Modifiers::MAC_CMD,
-                egui::Key::Comma,
-            ))
-        }) {
+        if ctx.input_mut(|i| i.consume_shortcut(&shortcuts::settings(self.is_macos))) {
             self.toasts
                 .info("This is where the settings will open")
                 .duration(Some(Duration::from_secs(5)))
