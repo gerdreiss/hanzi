@@ -2,11 +2,14 @@ use eframe::CreationContext;
 use eframe::epaint::text::FontInsert;
 use eframe::epaint::text::InsertFontFamily;
 use egui::Widget;
+use egui_notify::Toasts;
+use std::time::Duration;
 
 pub(crate) struct HanziApp {
     input: String,
     pinyin: String,
     translation: String,
+    toasts: Toasts,
 }
 
 impl HanziApp {
@@ -29,6 +32,7 @@ impl HanziApp {
             input: "学习汉语很有趣!".to_owned(),
             pinyin: "Xuéxí hànyǔ hěn yǒuqù!".to_owned(),
             translation: "Learning Chinese is fun!".to_owned(),
+            toasts: Toasts::default(),
         }
     }
 }
@@ -56,5 +60,41 @@ impl eframe::App for HanziApp {
                 });
             });
         });
+
+        if ctx.input_mut(|i| {
+            i.consume_shortcut(&egui::KeyboardShortcut::new(
+                egui::Modifiers::MAC_CMD,
+                egui::Key::S,
+            ))
+        }) {
+            self.toasts
+                .info("This is where the phrase with pinyin and translation will be saved")
+                .duration(Some(Duration::from_secs(5)))
+                .show_progress_bar(true);
+        }
+        if ctx.input_mut(|i| {
+            i.consume_shortcut(&egui::KeyboardShortcut::new(
+                egui::Modifiers::MAC_CMD,
+                egui::Key::F,
+            ))
+        }) {
+            self.toasts
+                .info("This is where the search for phrases will open")
+                .duration(Some(Duration::from_secs(5)))
+                .show_progress_bar(true);
+        }
+        if ctx.input_mut(|i| {
+            i.consume_shortcut(&egui::KeyboardShortcut::new(
+                egui::Modifiers::MAC_CMD,
+                egui::Key::Comma,
+            ))
+        }) {
+            self.toasts
+                .info("This is where the settings will open")
+                .duration(Some(Duration::from_secs(5)))
+                .show_progress_bar(true);
+        }
+
+        self.toasts.show(ctx);
     }
 }

@@ -8,3 +8,4 @@ authors = ["Gerd Reiss <gerd@reiss.pro>"]
 [dependencies]
 eframe = "0.31.1"
 egui = "0.31.1"
+egui-notify = "0.19.0"
