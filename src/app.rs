@@ -4,17 +4,16 @@ use eframe::epaint::text::InsertFontFamily;
 use egui::Widget;
 use egui::os::OperatingSystem;
 use egui_notify::Toasts;
-use ollama_rs::Ollama;
 use std::time::Duration;
 
 use crate::shortcuts;
 
+#[derive(Default)]
 pub(crate) struct HanziApp {
     input: String,
     pinyin: String,
     translation: String,
     toasts: Toasts,
-    ollama: Ollama,
     is_macos: bool,
 }
 
@@ -39,7 +38,6 @@ impl HanziApp {
             pinyin: "Xuéxí hànyǔ hěn yǒuqù!".to_owned(),
             translation: "Learning Chinese is fun!".to_owned(),
             toasts: Toasts::default(),
-            ollama: Ollama::default(),
             is_macos: cc.egui_ctx.os() == OperatingSystem::Mac,
         }
     }
@@ -99,17 +97,26 @@ impl eframe::App for HanziApp {
                 .info("This is where the call to LLM would occur")
                 .duration(Some(Duration::from_secs(3)))
                 .show_progress_bar(true);
-            // let response = llm::query(
-            //     &self.ollama,
-            //     Request {
-            //         model: "deepseek-chat".to_owned(),
-            //         text: self.input.clone(),
-            //     },
-            // )
-            // .into_future()
-            // .await;
-            // if let Ok(res) = response {
-            //     self.input = res;
+            // let input = self.input.clone();
+            // let request = crate::llm::Request {
+            //     model: "deepseek-r1".to_owned(), // TODO this would be taken from settings
+            //     text: input,
+            // };
+            // match poll_promise::Promise::spawn_async(llm::query(request)).block_and_take() {
+            //     Ok(response) => {
+            //         println!("LLM returned {:?}", response);
+            //         self.input = response.text.clone();
+            //         self.pinyin = response.pronunciation.clone();
+            //         self.translation = response.translation.clone();
+            //         ctx.request_repaint();
+            //     }
+            //     Err(err) => {
+            //         println!("LLM request failed: {}", err.cause());
+            //         self.toasts
+            //             .error(format!("Async call to LLM failed: {}", err.cause()))
+            //             .duration(Some(Duration::from_secs(5)))
+            //             .show_progress_bar(true);
+            //     }
             // }
         };
 
