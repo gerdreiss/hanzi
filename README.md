@@ -13,7 +13,7 @@ Before using
 How-to
 1. Enter any chinese phrase into the text field, push enter
 2. Pinyin and translation appear below
-3. <F1> key to display help (not implemented)
+3. F1 key to display help (not implemented)
 3. <Ctrl+A> on Linux or <Cmd+A> to display the about dialog  (not implemented)
 3. <Ctrl+S> on Linux or <Cmd+S> to save the phrase into the database  (not implemented)
 4. <Ctrl+F> on Linux or <Cmd+F> to search for saved phrases  (not implemented)
