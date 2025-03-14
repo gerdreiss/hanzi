@@ -3,9 +3,11 @@ use eframe::epaint::text::FontInsert;
 use eframe::epaint::text::InsertFontFamily;
 use egui::Widget;
 use egui::os::OperatingSystem;
+use egui_modal_spinner::ModalSpinner;
 use egui_notify::Toasts;
 use std::time::Duration;
 
+use crate::llm;
 use crate::shortcuts;
 
 #[derive(Default)]
@@ -14,7 +16,9 @@ pub(crate) struct HanziApp {
     pinyin: String,
     translation: String,
     toasts: Toasts,
+    spinner: ModalSpinner,
     is_macos: bool,
+    llm_query: Option<poll_promise::Promise<Result<llm::Response, llm::LLMError>>>,
 }
 
 impl HanziApp {
@@ -37,7 +41,11 @@ impl HanziApp {
             input: "学习汉语很有趣!".to_owned(),
             pinyin: "Xuéxí hànyǔ hěn yǒuqù!".to_owned(),
             translation: "Learning Chinese is fun!".to_owned(),
-            toasts: Toasts::default(),
+            toasts: Toasts::default().with_anchor(egui_notify::Anchor::BottomRight),
+            spinner: ModalSpinner::new()
+                .spinner_size(60.)
+                .spinner_color(egui::Color32::YELLOW),
+            llm_query: None,
             is_macos: cc.egui_ctx.os() == OperatingSystem::Mac,
         }
     }
@@ -45,6 +53,7 @@ impl HanziApp {
 
 impl eframe::App for HanziApp {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
+        // CREATE UI
         egui::CentralPanel::default().show(ctx, |ui| {
             ui.vertical(|ui| {
                 ui.with_layout(
@@ -68,6 +77,7 @@ impl eframe::App for HanziApp {
             });
         });
 
+        // HANDLE EVENTS
         if ctx.input_mut(|i| i.consume_shortcut(&shortcuts::save(self.is_macos))) {
             self.toasts
                 .info("This is where the phrase with pinyin and translation will be saved")
@@ -92,33 +102,41 @@ impl eframe::App for HanziApp {
                 .duration(Some(Duration::from_secs(5)))
                 .show_progress_bar(true);
         }
-        if ctx.input(|i| i.key_pressed(egui::Key::Enter)) {
-            self.toasts
-                .info("This is where the call to LLM would occur")
-                .duration(Some(Duration::from_secs(3)))
-                .show_progress_bar(true);
-            // let input = self.input.clone();
-            // let request = crate::llm::Request {
-            //     model: "deepseek-r1".to_owned(), // TODO this would be taken from settings
-            //     text: input,
-            // };
-            // match poll_promise::Promise::spawn_async(llm::query(request)).block_and_take() {
-            //     Ok(response) => {
-            //         println!("LLM returned {:?}", response);
-            //         self.input = response.text.clone();
-            //         self.pinyin = response.pronunciation.clone();
-            //         self.translation = response.translation.clone();
-            //         ctx.request_repaint();
-            //     }
-            //     Err(err) => {
-            //         println!("LLM request failed: {}", err.cause());
-            //         self.toasts
-            //             .error(format!("Async call to LLM failed: {}", err.cause()))
-            //             .duration(Some(Duration::from_secs(5)))
-            //             .show_progress_bar(true);
-            //     }
-            // }
-        };
+        if ctx.input(|i| i.key_pressed(egui::Key::Enter)) && self.llm_query.is_none() {
+            let request = llm::Request {
+                text: self.input.clone(),
+            };
+            self.llm_query = Some(poll_promise::Promise::spawn_async(llm::query(request)));
+            self.spinner.open();
+        }
+        // HANDLE LLM QUERIES
+        if let Some(query) = self.llm_query.take() {
+            match query.try_take() {
+                Ok(result) => match result {
+                    Ok(response) => {
+                        self.input = response.original.clone();
+                        self.pinyin = response.pinyin.clone();
+                        self.translation = response.translation.clone();
+                        self.llm_query = None;
+                        self.spinner.close();
+                    }
+                    Err(err) => {
+                        self.llm_query = None;
+                        self.spinner.close();
+                        self.toasts
+                            .error(format!("Async call to LLM failed: {}", err.cause()))
+                            .duration(Some(Duration::from_secs(5)))
+                            .show_progress_bar(true);
+                        self.spinner.close();
+                    }
+                },
+                Err(promise) => self.llm_query = Some(promise),
+            }
+        }
+
+        self.spinner.update_with_content(ctx, |ui| {
+            ui.label("Querying LLM...");
+        });
 
         self.toasts.show(ctx);
     }

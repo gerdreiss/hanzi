@@ -8,24 +8,23 @@ use serde_json::Error as JsonError;
 use thiserror::Error as ThisError;
 
 const PROMPT: &str = r#"
-provide the meaning and the pronunciation for the following text in JSON format.
-the first element should be labeled 'original' and contain the text.
-the second element should be labeled 'language' and contain the language of the text.
-the third element should be labeled 'translation' and contain the translation of the text.
-the fourth element should be labeled 'pronunciation' and contain the pronunciation for the text
+create a JSON string for the text given in double square brackets below with the following element:
+element labeled 'original' that contains the given text itself as value.
+element labeled 'language' that contains the language of the given text as value.
+element labeled 'translation' that contains the translation for the given text as value.
+element labeled 'pinyin' that contain the pinyin for the given text as value.
 "#;
 
 pub(crate) struct Request {
-    pub(crate) model: String,
     pub(crate) text: String,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
 pub(crate) struct Response {
-    pub(crate) text: String,
+    pub(crate) original: String,
     pub(crate) language: String,
     pub(crate) translation: String,
-    pub(crate) pronunciation: String,
+    pub(crate) pinyin: String,
 }
 
 #[derive(ThisError, Debug)]
@@ -34,6 +33,10 @@ pub(crate) enum LLMError {
     LLMQuery(#[from] OllamaError),
     #[error("LLM response processing failed")]
     LLMResponse(#[from] JsonError),
+    #[error("Invalid JSON cound not be extracted: {0}")]
+    InvalidJson(String),
+    #[error("LLM model not found")]
+    ModelNotFound,
 }
 
 impl LLMError {
@@ -47,22 +50,38 @@ impl LLMError {
                 OllamaError::Other(error) => error.clone(),
             },
             LLMError::LLMResponse(error) => error.to_string(),
+            LLMError::InvalidJson(error) => error.to_string(),
+            LLMError::ModelNotFound => "LLM model not found".to_string(),
         }
     }
 }
 
 pub(crate) async fn query(request: Request) -> Result<Response, LLMError> {
-    let prompt = format!("{}: {}", PROMPT, request.text);
-
-    let llm_response = Ollama::default()
-        .send_chat_messages(ChatMessageRequest::new(
-            request.model,
-            vec![ChatMessage::user(prompt)],
-        ))
+    let ollama = Ollama::default();
+    let model = ollama
+        .list_local_models()
+        .await?
+        .first()
+        .ok_or(LLMError::ModelNotFound)
+        .map(|model| model.name.clone())?;
+    let prompt = format!("{}[[{}]]", PROMPT, request.text);
+    let llm_response = ollama
+        .send_chat_messages(ChatMessageRequest::new(model, vec![ChatMessage::user(prompt)]))
         .await
         .map(|res| res.message.content)?;
-
-    let response = serde_json::from_str::<Response>(&llm_response)?;
-
+    eprintln!("Received: {}", llm_response);
+    let json = extract_json_string(&llm_response)?;
+    let response = serde_json::from_str::<Response>(json)?;
     Ok(response)
+}
+
+fn extract_json_string(s: &str) -> Result<&str, LLMError> {
+    let start = s.find('{');
+    let end = s.rfind('}');
+
+    start
+        .zip(end)
+        .filter(|(start, end)| start < end)
+        .map(|(start, end)| &s[start..end + 1])
+        .ok_or(LLMError::InvalidJson(s.to_string()))
 }
