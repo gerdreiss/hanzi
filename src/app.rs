@@ -74,6 +74,11 @@ impl eframe::App for HanziApp {
                         col_2.vertical(|ui| ui.label(egui::RichText::new(&self.translation).size(28.)));
                     })
                 });
+                ui.with_layout(egui::Layout::bottom_up(egui::Align::Center), |ui| {
+                    egui::Hyperlink::from_label_and_url("egui", "https://github.com/emilk/egui").ui(ui);
+                    egui::Label::new("Powered by").ui(ui);
+                    ui.separator();
+                });
             });
         });
 
