@@ -68,7 +68,7 @@ impl eframe::App for HanziApp {
                             .ui(ui)
                     },
                 );
-                egui::Frame::new().inner_margin(14.).show(ui, |ui| {
+                egui::Frame::new().inner_margin(18.).show(ui, |ui| {
                     ui.columns_const(|[col_1, col_2]| {
                         col_1.vertical(|ui| ui.label(egui::RichText::new(&self.pinyin).size(28.)));
                         col_2.vertical(|ui| ui.label(egui::RichText::new(&self.translation).size(28.)));
