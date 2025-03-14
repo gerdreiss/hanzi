@@ -123,24 +123,21 @@ impl eframe::App for HanziApp {
         // HANDLE LLM QUERIES
         if let Some(query) = self.llm_query.take() {
             match query.try_take() {
-                Ok(result) => match result {
-                    Ok(response) => {
-                        self.input = response.original.clone();
-                        self.pinyin = response.pinyin.clone();
-                        self.translation = response.translation.clone();
-                        self.llm_query = None;
-                        self.spinner.close();
-                    }
-                    Err(err) => {
-                        self.llm_query = None;
-                        self.spinner.close();
-                        self.toasts
-                            .error(format!("Async call to LLM failed: {}", err.cause()))
-                            .duration(Some(Duration::from_secs(5)))
-                            .show_progress_bar(true);
-                        self.spinner.close();
-                    }
-                },
+                Ok(Ok(response)) => {
+                    self.llm_query = None;
+                    self.spinner.close();
+                    self.input = response.original.clone();
+                    self.pinyin = response.pinyin.clone();
+                    self.translation = response.translation.clone();
+                }
+                Ok(Err(err)) => {
+                    self.llm_query = None;
+                    self.spinner.close();
+                    self.toasts
+                        .error(format!("Async call to LLM failed: {}", err.cause()))
+                        .duration(Some(Duration::from_secs(5)))
+                        .show_progress_bar(true);
+                }
                 Err(promise) => self.llm_query = Some(promise),
             }
         }
