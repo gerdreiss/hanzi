@@ -64,7 +64,7 @@ impl eframe::App for HanziApp {
                             .horizontal_align(egui::Align::Center)
                             .text_color(egui::Color32::YELLOW)
                             .margin(egui::Margin::same(16))
-                            .font(egui::FontId::new(54., egui::FontFamily::Proportional))
+                            .font(egui::FontId::new(64., egui::FontFamily::Proportional))
                             .ui(ui)
                     },
                 );
@@ -93,6 +93,12 @@ impl eframe::App for HanziApp {
         if ctx.input_mut(|i| i.consume_shortcut(&shortcuts::settings(self.is_macos))) {
             self.toasts
                 .info("This is where the settings will open")
+                .duration(Some(Duration::from_secs(5)))
+                .show_progress_bar(true);
+        }
+        if ctx.input_mut(|i| i.consume_shortcut(&shortcuts::about(self.is_macos))) {
+            self.toasts
+                .info("This is where the about dialog will open")
                 .duration(Some(Duration::from_secs(5)))
                 .show_progress_bar(true);
         }
