@@ -1,6 +1,5 @@
 mod app;
 mod llm;
-mod model;
 mod shortcuts;
 
 fn main() -> eframe::Result {

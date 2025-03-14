@@ -2,6 +2,7 @@ use eframe::CreationContext;
 use eframe::epaint::text::FontInsert;
 use eframe::epaint::text::InsertFontFamily;
 use egui::Widget;
+use egui::os::OperatingSystem;
 use egui_notify::Toasts;
 use ollama_rs::Ollama;
 use std::time::Duration;
@@ -39,7 +40,7 @@ impl HanziApp {
             translation: "Learning Chinese is fun!".to_owned(),
             toasts: Toasts::default(),
             ollama: Ollama::default(),
-            is_macos: std::env::consts::OS == "macos",
+            is_macos: cc.egui_ctx.os() == OperatingSystem::Mac,
         }
     }
 }
@@ -93,6 +94,24 @@ impl eframe::App for HanziApp {
                 .duration(Some(Duration::from_secs(5)))
                 .show_progress_bar(true);
         }
+        if ctx.input(|i| i.key_pressed(egui::Key::Enter)) {
+            self.toasts
+                .info("This is where the call to LLM would occur")
+                .duration(Some(Duration::from_secs(3)))
+                .show_progress_bar(true);
+            // let response = llm::query(
+            //     &self.ollama,
+            //     Request {
+            //         model: "deepseek-chat".to_owned(),
+            //         text: self.input.clone(),
+            //     },
+            // )
+            // .into_future()
+            // .await;
+            // if let Ok(res) = response {
+            //     self.input = res;
+            // }
+        };
 
         self.toasts.show(ctx);
     }
