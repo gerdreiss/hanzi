@@ -50,29 +50,51 @@ impl LLMError {
 
 pub(crate) async fn query(request: Request) -> Result<Response, LLMError> {
     let ollama = Ollama::default();
-    let model = ollama
-        .list_local_models()
-        .await?
-        .first()
-        .ok_or(LLMError::ModelNotFound)
-        .map(|model| model.name.clone())?;
-    let prompt = format!(
-        "Translate {} into English and provide romanization. Format the result as JSON with the original text as element 'original', translation as element 'translation', the language of the text as element 'language', and the romanization as element 'romanization'",
-        request.text
-    );
+    let model_name = get_model_name(&ollama).await?;
+    let prompt = get_prompt(request);
 
-    log::debug!("Querying LLM model {} with prompt {}", model, prompt);
+    log::debug!("Querying LLM model {} with prompt {}", model_name, prompt);
 
-    let llm_response = ollama
-        .send_chat_messages(ChatMessageRequest::new(model, vec![ChatMessage::user(prompt)]))
-        .await
-        .map(|res| res.message.content)?;
+    let llm_response = query_llm(ollama, model_name, prompt).await?;
 
     log::debug!("LLM response: {}", llm_response);
 
     let json = extract_json_string(&llm_response)?;
     let response = serde_json::from_str::<Response>(json)?;
     Ok(response)
+}
+
+async fn get_model_name(ollama: &Ollama) -> Result<String, LLMError> {
+    let models = ollama.list_local_models().await?;
+    let model_name = if models.iter().any(|model| model.name == "mistral:latest") {
+        Ok("mistral:latest".to_string())
+    } else {
+        log::warn!("It is recommended to install the 'mistral' model for best results");
+        models
+            .first()
+            .map(|model| model.name.clone())
+            .ok_or(LLMError::ModelNotFound)
+    }?;
+    Ok(model_name)
+}
+
+fn get_prompt(request: Request) -> String {
+    let prompt = format!(
+        "Translate {} into English and provide romanization. Format the result as JSON with the original text as element 'original', translation as element 'translation', the language of the text as element 'language', and the romanization as element 'romanization'",
+        request.text
+    );
+    prompt
+}
+
+async fn query_llm(ollama: Ollama, model_name: String, prompt: String) -> Result<String, LLMError> {
+    let llm_response = ollama
+        .send_chat_messages(ChatMessageRequest::new(
+            model_name,
+            vec![ChatMessage::user(prompt)],
+        ))
+        .await
+        .map(|res| res.message.content)?;
+    Ok(llm_response)
 }
 
 fn extract_json_string(s: &str) -> Result<&str, LLMError> {
