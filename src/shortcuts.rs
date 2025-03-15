@@ -11,7 +11,7 @@ pub(crate) fn settings(is_macos: bool) -> egui::KeyboardShortcut {
 }
 
 pub(crate) fn about(is_macos: bool) -> egui::KeyboardShortcut {
-    egui::KeyboardShortcut::new(modifiers(is_macos), egui::Key::A)
+    egui::KeyboardShortcut::new(modifiers(is_macos), egui::Key::B)
 }
 
 fn modifiers(is_macos: bool) -> egui::Modifiers {

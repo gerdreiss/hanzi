@@ -7,14 +7,6 @@ use serde::Serialize;
 use serde_json::Error as JsonError;
 use thiserror::Error as ThisError;
 
-const PROMPT: &str = r#"
-create a JSON string for the text given in double square brackets below with the following element:
-element labeled 'original' that contains the given text itself as value.
-element labeled 'language' that contains the language of the given text as value.
-element labeled 'translation' that contains the translation for the given text as value.
-element labeled 'pinyin' that contain the pinyin for the given text as value.
-"#;
-
 pub(crate) struct Request {
     pub(crate) text: String,
 }
@@ -24,7 +16,7 @@ pub(crate) struct Response {
     pub(crate) original: String,
     pub(crate) language: String,
     pub(crate) translation: String,
-    pub(crate) pinyin: String,
+    pub(crate) romanization: String,
 }
 
 #[derive(ThisError, Debug)]
@@ -64,12 +56,20 @@ pub(crate) async fn query(request: Request) -> Result<Response, LLMError> {
         .first()
         .ok_or(LLMError::ModelNotFound)
         .map(|model| model.name.clone())?;
-    let prompt = format!("{}[[{}]]", PROMPT, request.text);
+    let prompt = format!(
+        "Translate {} into English and provide romanization. Format the result as JSON with the original text as element 'original', translation as element 'translation', the language of the text as element 'language', and the romanization as element 'romanization'",
+        request.text
+    );
+
+    log::debug!("Querying LLM model {} with prompt {}", model, prompt);
+
     let llm_response = ollama
         .send_chat_messages(ChatMessageRequest::new(model, vec![ChatMessage::user(prompt)]))
         .await
         .map(|res| res.message.content)?;
-    eprintln!("Received: {}", llm_response);
+
+    log::debug!("LLM response: {}", llm_response);
+
     let json = extract_json_string(&llm_response)?;
     let response = serde_json::from_str::<Response>(json)?;
     Ok(response)

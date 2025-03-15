@@ -6,11 +6,13 @@ The goal of this project is to create a simple desktop app that queries a LLM mo
 
 ## Usage
 
-Before using
+### Before using
 1. Install [Ollama](https://ollama.com/)
-2. `ollama run <model>` - take the model from the [model library](https://ollama.com/library)
+2. `ollama run <model>` - take the model from the [model library](https://ollama.com/library). In my experience, mistral is the best LLM model for translations.
 
-How-to
+To see logs, start Hanzi providing environment variable RUST_LOG=\<log level\>
+
+### How-to
 1. Enter any chinese phrase into the text field, push enter
 2. Pinyin and translation appear below
 3. F1 key to display help (not implemented)

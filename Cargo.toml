@@ -10,8 +10,10 @@ eframe = "0.31.1"
 egui = "0.31.1"
 egui-modal-spinner = "0.3.0"
 egui-notify = "0.19.0"
+log = "0.4.26"
 ollama-rs = "0.2.6"
 poll-promise = { version = "0.3.0", features = ["tokio"] }
+pretty_env_logger = "0.5.0"
 serde = { version = "1.0.219", features = ["std", "derive"] }
 serde_json = "1.0.140"
 thiserror = "2.0.12"

@@ -70,8 +70,8 @@ impl eframe::App for HanziApp {
                 );
                 egui::Frame::new().inner_margin(18.).show(ui, |ui| {
                     ui.columns_const(|[col_1, col_2]| {
-                        col_1.vertical(|ui| ui.label(egui::RichText::new(&self.pinyin).size(28.)));
                         col_2.vertical(|ui| ui.label(egui::RichText::new(&self.translation).size(28.)));
+                        col_1.vertical(|ui| ui.label(egui::RichText::new(&self.pinyin).size(28.)));
                     })
                 });
                 ui.with_layout(egui::Layout::bottom_up(egui::Align::Center), |ui| {
@@ -114,6 +114,8 @@ impl eframe::App for HanziApp {
                 .show_progress_bar(true);
         }
         if ctx.input(|i| i.key_pressed(egui::Key::Enter)) && self.llm_query.is_none() {
+            self.translation.clear();
+            self.pinyin.clear();
             let request = llm::Request {
                 text: self.input.clone(),
             };
@@ -127,14 +129,19 @@ impl eframe::App for HanziApp {
                     self.llm_query = None;
                     self.spinner.close();
                     self.input = response.original.clone();
-                    self.pinyin = response.pinyin.clone();
+                    self.pinyin = response.romanization.clone();
                     self.translation = response.translation.clone();
                 }
                 Ok(Err(err)) => {
+                    log::error!(
+                        "Error occurred when querying LLM: {} caused by {}",
+                        err,
+                        err.cause()
+                    );
                     self.llm_query = None;
                     self.spinner.close();
                     self.toasts
-                        .error(format!("Async call to LLM failed: {}", err.cause()))
+                        .error(format!("Querying LLM failed: {}", err.cause()))
                         .duration(Some(Duration::from_secs(5)))
                         .show_progress_bar(true);
                 }
