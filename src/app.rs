@@ -4,7 +4,9 @@ use eframe::epaint::text::InsertFontFamily;
 use egui::Widget;
 use egui::os::OperatingSystem;
 use egui_modal_spinner::ModalSpinner;
+use egui_notify::Anchor;
 use egui_notify::Toasts;
+use poll_promise::Promise;
 use std::time::Duration;
 
 use crate::llm;
@@ -18,7 +20,7 @@ pub(crate) struct HanziApp {
     toasts: Toasts,
     spinner: ModalSpinner,
     is_macos: bool,
-    llm_query: Option<poll_promise::Promise<Result<llm::Response, llm::LLMError>>>,
+    llm_query: Option<Promise<Result<llm::Response, llm::LLMError>>>,
 }
 
 impl HanziApp {
@@ -41,7 +43,7 @@ impl HanziApp {
             input: "学习汉语很有趣!".to_owned(),
             romantization: "Xuéxí hànyǔ hěn yǒuqù!".to_owned(),
             translation: "Learning Chinese is fun!".to_owned(),
-            toasts: Toasts::default().with_anchor(egui_notify::Anchor::BottomRight),
+            toasts: Toasts::default().with_anchor(Anchor::BottomRight),
             spinner: ModalSpinner::new()
                 .spinner_size(60.)
                 .spinner_color(egui::Color32::YELLOW),
@@ -120,7 +122,7 @@ impl eframe::App for HanziApp {
             let request = llm::Request {
                 text: self.input.clone(),
             };
-            self.llm_query = Some(poll_promise::Promise::spawn_async(llm::query(request)));
+            self.llm_query = Some(Promise::spawn_async(llm::query(request)));
             self.spinner.open();
         }
 

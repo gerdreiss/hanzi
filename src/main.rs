@@ -1,5 +1,7 @@
 mod app;
 mod llm;
+mod persistence;
+mod schema;
 mod shortcuts;
 
 #[tokio::main]
