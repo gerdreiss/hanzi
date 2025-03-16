@@ -6,7 +6,7 @@ CREATE TABLE languages (
 
 CREATE TABLE phrases (
     id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-    original TEXT NOT NULL,
+    original TEXT NOT NULL UNIQUE,
     lang_id INTEGER NOT NULL,
     translation TEXT NOT NULL,
     romanization TEXT,
