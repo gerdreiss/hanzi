@@ -6,6 +6,7 @@ license = "MIT OR Apache-2.0"
 authors = ["Gerd Reiss <gerd@reiss.pro>"]
 
 [dependencies]
+diesel = { version = "2.2.8", default-features = false, features = ["sqlite"] }
 eframe = "0.31.1"
 egui = "0.31.1"
 egui-modal-spinner = "0.3.0"
