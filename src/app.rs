@@ -13,7 +13,7 @@ use crate::shortcuts;
 #[derive(Default)]
 pub(crate) struct HanziApp {
     input: String,
-    pinyin: String,
+    romantization: String,
     translation: String,
     toasts: Toasts,
     spinner: ModalSpinner,
@@ -39,7 +39,7 @@ impl HanziApp {
         ));
         Self {
             input: "学习汉语很有趣!".to_owned(),
-            pinyin: "Xuéxí hànyǔ hěn yǒuqù!".to_owned(),
+            romantization: "Xuéxí hànyǔ hěn yǒuqù!".to_owned(),
             translation: "Learning Chinese is fun!".to_owned(),
             toasts: Toasts::default().with_anchor(egui_notify::Anchor::BottomRight),
             spinner: ModalSpinner::new()
@@ -71,7 +71,8 @@ impl eframe::App for HanziApp {
                 egui::Frame::new().inner_margin(18.).show(ui, |ui| {
                     ui.columns_const(|[col_1, col_2]| {
                         col_2.vertical(|ui| ui.label(egui::RichText::new(&self.translation).size(28.)));
-                        col_1.vertical(|ui| ui.label(egui::RichText::new(&self.pinyin).size(28.)));
+                        col_1
+                            .vertical(|ui| ui.label(egui::RichText::new(&self.romantization).size(28.)));
                     })
                 });
                 ui.with_layout(egui::Layout::bottom_up(egui::Align::Center), |ui| {
@@ -85,7 +86,7 @@ impl eframe::App for HanziApp {
         // HANDLE EVENTS
         if ctx.input_mut(|i| i.consume_shortcut(&shortcuts::save(self.is_macos))) {
             self.toasts
-                .info("This is where the phrase with pinyin and translation will be saved")
+                .info("This is where the phrase with translation and romantization will be saved")
                 .duration(Some(Duration::from_secs(5)))
                 .show_progress_bar(true);
         }
@@ -115,13 +116,14 @@ impl eframe::App for HanziApp {
         }
         if ctx.input(|i| i.key_pressed(egui::Key::Enter)) && self.llm_query.is_none() {
             self.translation.clear();
-            self.pinyin.clear();
+            self.romantization.clear();
             let request = llm::Request {
                 text: self.input.clone(),
             };
             self.llm_query = Some(poll_promise::Promise::spawn_async(llm::query(request)));
             self.spinner.open();
         }
+
         // HANDLE LLM QUERIES
         if let Some(query) = self.llm_query.take() {
             match query.try_take() {
@@ -129,7 +131,7 @@ impl eframe::App for HanziApp {
                     self.llm_query = None;
                     self.spinner.close();
                     self.input = response.original.clone();
-                    self.pinyin = response.romanization.clone();
+                    self.romantization = response.romanization.clone();
                     self.translation = response.translation.clone();
                 }
                 Ok(Err(err)) => {

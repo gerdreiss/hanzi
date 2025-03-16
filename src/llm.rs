@@ -75,6 +75,7 @@ async fn get_model_name(ollama: &Ollama) -> Result<String, LLMError> {
             .map(|model| model.name.clone())
             .ok_or(LLMError::ModelNotFound)
     }?;
+    log::info!("Found {} model", model_name);
     Ok(model_name)
 }
 

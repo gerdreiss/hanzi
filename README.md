@@ -14,7 +14,7 @@ To see logs, start Hanzi providing environment variable RUST_LOG=\<log level\>
 
 ### How-to
 1. Enter any chinese phrase into the text field, push enter
-2. Pinyin and translation appear below
+2. Translation and romantization appear below
 3. F1 key to display help (not implemented)
 3. <Ctrl+A> on Linux or <Cmd+A> to display the about dialog  (not implemented)
 3. <Ctrl+S> on Linux or <Cmd+S> to save the phrase into the database  (not implemented)
