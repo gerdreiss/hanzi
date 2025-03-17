@@ -12,9 +12,15 @@ pub(crate) struct Request {
 }
 
 #[derive(Serialize, Deserialize, Debug)]
+pub(crate) struct Language {
+    pub(crate) name: String,
+    pub(crate) iso_code: String,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
 pub(crate) struct Response {
     pub(crate) original: String,
-    pub(crate) language: String,
+    pub(crate) language: Language,
     pub(crate) translation: String,
     pub(crate) romanization: String,
 }
@@ -81,7 +87,7 @@ async fn get_model_name(ollama: &Ollama) -> Result<String, LLMError> {
 
 fn get_prompt(request: Request) -> String {
     let prompt = format!(
-        "Translate {} into English and provide romanization. Format the result as JSON with the original text as element 'original', translation as element 'translation', the language of the text as element 'language', and the romanization as element 'romanization'",
+        "Translate {} into English and provide romanization. Format the result as JSON with the original text as element 'original', translation as element 'translation', the language of the text as a nested object named 'language' with elements 'name' and 'iso_code' that contain the name of the language and its ISO code respectively, and the romanization as element 'romanization'",
         request.text
     );
     prompt

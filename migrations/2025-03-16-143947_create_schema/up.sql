@@ -1,7 +1,7 @@
 CREATE TABLE languages (
     id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-    name VARCHAR NOT NULL,
-    iso VARCHAR NOT NULL
+    name TEXT NOT NULL,
+    iso TEXT NOT NULL
 );
 
 CREATE TABLE phrases (
@@ -10,6 +10,5 @@ CREATE TABLE phrases (
     lang_id INTEGER NOT NULL,
     translation TEXT NOT NULL,
     romanization TEXT,
-
     FOREIGN KEY (lang_id) REFERENCES languages (id)
 );
