@@ -54,15 +54,15 @@ pub(crate) enum PersistenceError {
     NotFound,
 }
 
-pub(crate) fn _create_connection(database_url: &str) -> Result<SqliteConnection, ConnectionError> {
-    SqliteConnection::establish(database_url)
+pub(crate) fn create_connection(database_url: &str) -> Result<SqliteConnection, PersistenceError> {
+    let connection = SqliteConnection::establish(database_url)?;
+    Ok(connection)
 }
 
-pub(crate) fn _find_phrases(
-    conn: &mut SqliteConnection,
-    text: String,
-) -> Result<Vec<Phrase>, PersistenceError> {
+pub(crate) fn find_phrases(database_url: &str, text: String) -> Result<Vec<Phrase>, PersistenceError> {
     use crate::schema::phrases::dsl::*;
+
+    let mut conn = create_connection(database_url)?;
 
     let result = phrases
         .filter(
@@ -73,13 +73,13 @@ pub(crate) fn _find_phrases(
         )
         .limit(1)
         .select(Phrase::as_select())
-        .load(conn)?;
+        .load(&mut conn)?;
 
     Ok(result)
 }
 
-pub(crate) fn _create_phrase(
-    conn: &mut SqliteConnection,
+pub(crate) fn create_phrase(
+    database_url: &str,
     text: String,
     language_name: String,
     language_code: String,
@@ -88,8 +88,10 @@ pub(crate) fn _create_phrase(
 ) -> Result<usize, PersistenceError> {
     use crate::schema::phrases::dsl::*;
 
-    let language_id = _get_language_id(conn, &language_code) //
-        .or(_create_language(conn, &language_name, &language_code))?;
+    let mut conn = create_connection(database_url)?;
+
+    let language_id = _get_language_id(&mut conn, &language_code) //
+        .or(_create_language(&mut conn, &language_name, &language_code))?;
 
     let new_phrase = NewPhrase {
         lang_id: language_id,
@@ -100,7 +102,7 @@ pub(crate) fn _create_phrase(
 
     let result = diesel::insert_into(phrases::table())
         .values(&new_phrase)
-        .execute(conn)?;
+        .execute(&mut conn)?;
 
     Ok(result)
 }

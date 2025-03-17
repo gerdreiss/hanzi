@@ -2,35 +2,19 @@ use ollama_rs::Ollama;
 use ollama_rs::error::OllamaError;
 use ollama_rs::generation::chat::ChatMessage;
 use ollama_rs::generation::chat::request::ChatMessageRequest;
-use serde::Deserialize;
-use serde::Serialize;
-use serde_json::Error as JsonError;
-use thiserror::Error as ThisError;
 
-pub(crate) struct Request {
+use crate::model;
+
+pub(crate) struct Query {
     pub(crate) text: String,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
-pub(crate) struct Language {
-    pub(crate) name: String,
-    pub(crate) iso_code: String,
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-pub(crate) struct Response {
-    pub(crate) original: String,
-    pub(crate) language: Language,
-    pub(crate) translation: String,
-    pub(crate) romanization: String,
-}
-
-#[derive(ThisError, Debug)]
+#[derive(thiserror::Error, Debug)]
 pub(crate) enum LLMError {
     #[error("LLM query failed")]
     LLMQuery(#[from] OllamaError),
     #[error("LLM response processing failed")]
-    LLMResponse(#[from] JsonError),
+    LLMResponse(#[from] serde_json::Error),
     #[error("Invalid JSON cound not be extracted: {0}")]
     InvalidJson(String),
     #[error("LLM model not found")]
@@ -54,10 +38,10 @@ impl LLMError {
     }
 }
 
-pub(crate) async fn query(request: Request) -> Result<Response, LLMError> {
+pub(crate) async fn query(query: Query) -> Result<model::Phrase, LLMError> {
     let ollama = Ollama::default();
     let model_name = get_model_name(&ollama).await?;
-    let prompt = get_prompt(request);
+    let prompt = get_prompt(&query.text);
 
     log::debug!("Querying LLM model {} with prompt {}", model_name, prompt);
 
@@ -66,7 +50,7 @@ pub(crate) async fn query(request: Request) -> Result<Response, LLMError> {
     log::debug!("LLM response: {}", llm_response);
 
     let json = extract_json_string(&llm_response)?;
-    let response = serde_json::from_str::<Response>(json)?;
+    let response = serde_json::from_str::<model::Phrase>(json)?;
     Ok(response)
 }
 
@@ -85,10 +69,10 @@ async fn get_model_name(ollama: &Ollama) -> Result<String, LLMError> {
     Ok(model_name)
 }
 
-fn get_prompt(request: Request) -> String {
+fn get_prompt(request: &str) -> String {
     let prompt = format!(
         "Translate {} into English and provide romanization. Format the result as JSON with the original text as element 'original', translation as element 'translation', the language of the text as a nested object named 'language' with elements 'name' and 'iso_code' that contain the name of the language and its ISO code respectively, and the romanization as element 'romanization'",
-        request.text
+        request
     );
     prompt
 }
