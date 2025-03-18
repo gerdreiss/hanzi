@@ -3,6 +3,7 @@ mod llm;
 mod model;
 mod persistence;
 mod schema;
+mod screensize;
 mod shortcuts;
 
 use diesel_migrations::EmbeddedMigrations;
@@ -17,18 +18,23 @@ async fn main() -> eframe::Result {
 
     let home_dir = std::env::var("HOME").expect("$HOME environment variable to exist");
     let hanzi_dir = format!("{}/.hanzi", home_dir);
-    let database_url = format!("{}/data.db", hanzi_dir);
-    if !std::fs::exists(&hanzi_dir).is_ok_and(|exists| exists) {
-        std::fs::create_dir(&hanzi_dir).expect("Successful folder creation");
+    if !std::path::Path::new(&hanzi_dir).is_dir() {
+        std::fs::create_dir_all(&hanzi_dir).expect("Successful folder creation");
     }
-    let mut connection =
-        crate::persistence::create_connection(&database_url).expect("Successful connection");
-    connection
+
+    let database_url = format!("{}/data.db", hanzi_dir);
+    crate::persistence::create_connection(&database_url)
+        .expect("Successful connection")
         .run_pending_migrations(MIGRATIONS)
         .expect("Successful migration");
 
+    let screen_size = screensize::get_primary_screen_size()
+        .map_err(|err| eframe::Error::AppCreation(Box::new(err)))?;
+
     let options = eframe::NativeOptions {
-        viewport: egui::ViewportBuilder::default().with_inner_size([1200.0, 800.0]),
+        viewport: egui::ViewportBuilder::default()
+            .with_min_inner_size([1200., 800.])
+            .with_inner_size([screen_size.x as f32 * 0.6, screen_size.y as f32 * 0.7]),
         centered: true,
         ..Default::default()
     };
