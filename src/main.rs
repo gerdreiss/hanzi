@@ -10,6 +10,8 @@ use diesel_migrations::EmbeddedMigrations;
 use diesel_migrations::MigrationHarness;
 use diesel_migrations::embed_migrations;
 
+use crate::persistence::connection;
+
 const MIGRATIONS: EmbeddedMigrations = embed_migrations!("./migrations");
 
 #[tokio::main]
@@ -23,7 +25,7 @@ async fn main() -> eframe::Result {
     }
 
     let database_url = format!("{}/data.db", hanzi_dir);
-    crate::persistence::create_connection(&database_url)
+    connection::create(&database_url)
         .expect("Successful connection")
         .run_pending_migrations(MIGRATIONS)
         .expect("Successful migration");

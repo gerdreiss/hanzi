@@ -76,8 +76,7 @@ impl eframe::App for HanziApp {
                         col_2.vertical(|ui| {
                             ui.label(
                                 egui::RichText::new(
-                                    &self
-                                        .phrase
+                                    self.phrase
                                         .as_ref()
                                         .map(|p| p.translation.clone())
                                         .unwrap_or_default(),
@@ -88,8 +87,7 @@ impl eframe::App for HanziApp {
                         col_1.vertical(|ui| {
                             ui.label(
                                 egui::RichText::new(
-                                    &self
-                                        .phrase
+                                    self.phrase
                                         .as_ref()
                                         .map(|p| p.romanization.clone())
                                         .unwrap_or_default(),
@@ -110,7 +108,7 @@ impl eframe::App for HanziApp {
         // HANDLE EVENTS
         if ctx.input_mut(|i| i.consume_shortcut(&shortcuts::save(self.is_macos))) {
             if let Some(phrase) = self.phrase.as_mut() {
-                match persistence::create_phrase(
+                match persistence::write::phrase(
                     &self.database_url,
                     phrase.original.clone(),
                     phrase.language.name.clone(),
