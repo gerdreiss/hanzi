@@ -7,23 +7,23 @@ use crate::persistence::read;
 
 pub(crate) fn phrase(
     database_url: &str,
-    text: String,
+    phrase: String,
     language_name: String,
     language_code: String,
-    text_translation: String,
+    phrase_translation: String,
     translation_romanization: Option<String>,
 ) -> Result<usize, super::PersistenceError> {
     use crate::schema::phrases::dsl::*;
 
     let mut conn = connection::create(database_url)?;
 
-    let language_id = read::language_id(&mut conn, &language_code) //
+    let lang_id = read::language_id(&mut conn, &language_code) //
         .or(language(&mut conn, &language_name, &language_code))?;
 
     let new_phrase = model::NewPhrase {
-        lang_id: language_id,
-        original: text,
-        translation: text_translation,
+        language_id: lang_id,
+        text: phrase,
+        translation: phrase_translation,
         romanization: translation_romanization,
     };
 
@@ -43,7 +43,7 @@ pub(crate) fn language(
 
     let new_language = model::NewLanguage {
         name: language_name.to_string(),
-        iso: language_code.to_string(),
+        code: language_code.to_string(),
     };
 
     let count = diesel::insert_into(languages::table())

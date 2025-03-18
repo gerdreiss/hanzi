@@ -5,6 +5,7 @@ mod persistence;
 mod schema;
 mod screensize;
 mod shortcuts;
+mod transform;
 
 use diesel_migrations::EmbeddedMigrations;
 use diesel_migrations::MigrationHarness;

@@ -22,6 +22,7 @@ pub(crate) struct HanziApp {
     input: String,
     llm_query: Option<Promise<Result<model::Phrase, llm::LLMError>>>,
     phrase: Option<model::Phrase>,
+    phrases: Vec<model::Phrase>,
 }
 
 impl HanziApp {
@@ -50,6 +51,7 @@ impl HanziApp {
             input: "学习汉语很有趣!".to_owned(),
             llm_query: None,
             phrase: None,
+            phrases: Vec::new(),
         }
     }
 }
@@ -110,9 +112,9 @@ impl eframe::App for HanziApp {
             if let Some(phrase) = self.phrase.as_mut() {
                 match persistence::write::phrase(
                     &self.database_url,
-                    phrase.original.clone(),
+                    phrase.text.clone(),
                     phrase.language.name.clone(),
-                    phrase.language.iso_code.clone(),
+                    phrase.language.code.clone(),
                     phrase.translation.clone(),
                     Some(phrase.romanization.clone()),
                 ) {
@@ -137,10 +139,34 @@ impl eframe::App for HanziApp {
             }
         }
         if ctx.input_mut(|i| i.consume_shortcut(&shortcuts::find(self.is_macos))) {
-            self.toasts
-                .info("This is where the search for phrases will open")
-                .duration(Some(Duration::from_secs(5)))
-                .show_progress_bar(true);
+            match persistence::read::phrases(&self.database_url, &self.input) {
+                Ok(phrases) => {
+                    if phrases.is_empty() {
+                        self.toasts
+                            .info("Nothing found")
+                            .duration(Some(Duration::from_secs(5)))
+                            .show_progress_bar(true);
+                    } else if phrases.len() == 1 {
+                        self.phrase = phrases
+                            .into_iter()
+                            .map(model::Phrase::from)
+                            .collect::<Vec<_>>()
+                            .first()
+                            .cloned();
+                        self.phrases = Vec::new();
+                    } else {
+                        self.phrase = None;
+                        self.phrases = phrases.into_iter().map(model::Phrase::from).collect();
+                    }
+                }
+                Err(err) => {
+                    log::error!("Failed to load phrases: {}", err);
+                    self.toasts
+                        .info("Failed to load phrases")
+                        .duration(Some(Duration::from_secs(5)))
+                        .show_progress_bar(true);
+                }
+            }
         }
         if ctx.input_mut(|i| i.consume_shortcut(&shortcuts::settings(self.is_macos))) {
             self.toasts
@@ -174,7 +200,7 @@ impl eframe::App for HanziApp {
                 Ok(Ok(response)) => {
                     self.llm_query = None;
                     self.spinner.close();
-                    self.input = response.original.clone();
+                    self.input = response.text.clone();
                     self.phrase = Some(response);
                 }
                 Ok(Err(err)) => {

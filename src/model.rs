@@ -1,15 +1,15 @@
 use serde::Deserialize;
 use serde::Serialize;
 
-#[derive(Serialize, Deserialize, Debug, Default)]
+#[derive(Clone, Default, Debug, Deserialize, Serialize)]
 pub(crate) struct Language {
     pub(crate) name: String,
-    pub(crate) iso_code: String,
+    pub(crate) code: String,
 }
 
-#[derive(Serialize, Deserialize, Debug, Default)]
+#[derive(Clone, Default, Debug, Deserialize, Serialize)]
 pub(crate) struct Phrase {
-    pub(crate) original: String,
+    pub(crate) text: String,
     pub(crate) language: Language,
     pub(crate) translation: String,
     pub(crate) romanization: String,

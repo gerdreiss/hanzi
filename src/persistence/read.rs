@@ -1,3 +1,4 @@
+use diesel::associations::HasTable;
 use diesel::prelude::*;
 
 use crate::persistence::connection;
@@ -5,22 +6,18 @@ use crate::persistence::model;
 
 pub(crate) fn phrases(
     database_url: &str,
-    text: String,
-) -> Result<Vec<model::Phrase>, super::PersistenceError> {
+    term: &str,
+) -> Result<Vec<(model::Language, model::Phrase)>, super::PersistenceError> {
+    use crate::schema::languages::dsl::*;
     use crate::schema::phrases::dsl::*;
 
     let mut conn = connection::create(database_url)?;
 
-    let result = phrases
-        .filter(
-            original
-                .like(format!("%{}%", text))
-                .or(translation.like(format!("%{}%", text)))
-                .or(romanization.like(format!("%{}%", text))),
-        )
-        .limit(1)
-        .select(model::Phrase::as_select())
-        .load(&mut conn)?;
+    let result = languages::table()
+        .inner_join(phrases::table())
+        .filter(text.like(format!("%{}%", term)))
+        .select((model::Language::as_select(), model::Phrase::as_select()))
+        .load::<(model::Language, model::Phrase)>(&mut conn)?;
 
     Ok(result)
 }
@@ -31,14 +28,10 @@ pub(super) fn language_id(
 ) -> Result<i32, super::PersistenceError> {
     use crate::schema::languages::dsl::*;
 
-    let result = languages
-        .filter(iso.eq(language_code))
-        .limit(1)
+    let lang = languages
+        .filter(code.eq(language_code))
         .select(model::Language::as_select())
-        .load(conn)?;
+        .get_result(conn)?;
 
-    result
-        .first()
-        .map(|r| r.id)
-        .ok_or(super::PersistenceError::NotFound)
+    Ok(lang.id)
 }
