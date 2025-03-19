@@ -1,6 +1,3 @@
-use std::num::TryFromIntError;
-use thiserror::Error;
-
 #[cfg(target_os = "linux")]
 mod linux;
 #[cfg(target_os = "macos")]
@@ -16,16 +13,7 @@ pub(crate) struct ScreenSize {
     pub(crate) y: u64,
 }
 
-#[derive(Debug, Error)]
-pub enum ScreenSizeError {
-    #[error("Screen size is invalid: {0}")]
-    InvalidSize(#[source] TryFromIntError), //windows or linux only
-    #[error("No screen found")]
-    NoScreen, //linux only
-}
-
-/// code shamelessly stolen from https://github.com/emmabritton/screen_size
 #[inline(always)]
-pub fn get_primary_screen_size() -> Result<ScreenSize, ScreenSizeError> {
+pub fn get_primary_screen_size() -> ScreenSize {
     display_size_impl()
 }

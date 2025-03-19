@@ -71,7 +71,7 @@ async fn get_model_name(ollama: &Ollama) -> Result<String, LLMError> {
 
 fn get_prompt(request: &str) -> String {
     let prompt = format!(
-        "Translate {} into English and provide romanization. Format the result as JSON with the original text as element 'text', translation as element 'translation', the language of the text as a nested object named 'language' with elements 'name' and 'code' that contain the name of the language and its ISO code respectively, and the romanization as element 'romanization'",
+        "Translate '{}' into English and provide romanization in case of non-latin alphabet, pronunciation otherwise. Format the result as JSON with the original text as element 'text', translation as element 'translation', the language of the text as a nested object named 'language' with elements 'name' and 'code' that contain the name of the language and its ISO code respectively, and the romanization as element 'romanization'",
         request
     );
     prompt

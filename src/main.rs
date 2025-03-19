@@ -31,8 +31,7 @@ async fn main() -> eframe::Result {
         .run_pending_migrations(MIGRATIONS)
         .expect("Successful migration");
 
-    let screen_size = screensize::get_primary_screen_size()
-        .map_err(|err| eframe::Error::AppCreation(Box::new(err)))?;
+    let screen_size = screensize::get_primary_screen_size();
 
     let options = eframe::NativeOptions {
         viewport: egui::ViewportBuilder::default()
