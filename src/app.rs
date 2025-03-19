@@ -8,6 +8,7 @@ use egui_notify::Anchor;
 use egui_notify::Toasts;
 use poll_promise::Promise;
 use std::time::Duration;
+use std::time::Instant;
 
 use crate::llm;
 use crate::model;
@@ -21,6 +22,7 @@ pub(crate) struct HanziApp {
     is_macos: bool,
     input: String,
     llm_query: Option<Promise<Result<model::Phrase, llm::LLMError>>>,
+    llm_query_start: Option<Instant>,
     phrase: Option<model::Phrase>,
     phrases: Vec<model::Phrase>,
 }
@@ -50,6 +52,7 @@ impl HanziApp {
             is_macos: cc.egui_ctx.os() == OperatingSystem::Mac,
             input: "学习汉语很有趣!".to_owned(),
             llm_query: None,
+            llm_query_start: None,
             phrase: None,
             phrases: Vec::new(),
         }
@@ -210,7 +213,16 @@ impl eframe::App for HanziApp {
             self.llm_query = Some(Promise::spawn_async(llm::query(llm::Query {
                 text: self.input.to_owned(),
             })));
+            self.llm_query_start = Some(Instant::now());
             self.spinner.open();
+        }
+        if ctx.input(|i| i.key_pressed(egui::Key::Escape)) {
+            if let Some(q) = self.llm_query.take() {
+                q.abort();
+                self.llm_query = None;
+                self.llm_query_start = None;
+                self.spinner.close();
+            }
         }
 
         // HANDLE LLM QUERIES
@@ -218,6 +230,7 @@ impl eframe::App for HanziApp {
             match query.try_take() {
                 Ok(Ok(response)) => {
                     self.llm_query = None;
+                    self.llm_query_start = None;
                     self.spinner.close();
                     self.input = response.text.clone();
                     self.phrase = Some(response);
@@ -229,13 +242,31 @@ impl eframe::App for HanziApp {
                         err.cause()
                     );
                     self.llm_query = None;
+                    self.llm_query_start = None;
                     self.spinner.close();
                     self.toasts
                         .error(format!("Querying LLM failed: {}", err.cause()))
                         .duration(Some(Duration::from_secs(5)))
                         .show_progress_bar(true);
                 }
-                Err(promise) => self.llm_query = Some(promise),
+                Err(promise) => {
+                    if let Some(start) = self.llm_query_start {
+                        if start.elapsed().as_secs() > 60 {
+                            promise.abort();
+                            self.llm_query = None;
+                            self.llm_query_start = None;
+                            self.spinner.close();
+                            self.toasts
+                                .error("LLM query timed out")
+                                .duration(Some(Duration::from_secs(5)))
+                                .show_progress_bar(true);
+                        } else {
+                            self.llm_query = Some(promise)
+                        }
+                    } else {
+                        self.llm_query = Some(promise)
+                    }
+                }
             }
         }
 
