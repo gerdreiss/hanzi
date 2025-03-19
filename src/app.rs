@@ -54,6 +54,55 @@ impl HanziApp {
             phrases: Vec::new(),
         }
     }
+
+    fn input(&mut self, ui: &mut egui::Ui) {
+        ui.with_layout(
+            egui::Layout::left_to_right(egui::Align::TOP).with_main_justify(true),
+            |ui| {
+                egui::TextEdit::singleline(&mut self.input)
+                    .id(egui::Id::new("hanzi_editor"))
+                    .horizontal_align(egui::Align::Center)
+                    .text_color(egui::Color32::YELLOW)
+                    .margin(egui::Margin::same(16))
+                    .font(egui::FontId::new(64., egui::FontFamily::Proportional))
+                    .ui(ui)
+            },
+        );
+    }
+
+    fn translation(&mut self, ui: &mut egui::Ui) {
+        ui.columns_const(|[col_1, col_2]| {
+            col_2.vertical(|ui| {
+                ui.label(
+                    egui::RichText::new(
+                        self.phrase
+                            .as_ref()
+                            .map(|p| p.translation.clone())
+                            .unwrap_or_default(),
+                    )
+                    .size(28.),
+                )
+            });
+            col_1.vertical(|ui| {
+                ui.label(
+                    egui::RichText::new(
+                        self.phrase
+                            .as_ref()
+                            .map(|p| p.romanization.clone())
+                            .unwrap_or_default(),
+                    )
+                    .size(28.),
+                )
+            });
+        });
+    }
+
+    fn phrase_list(&mut self, ui: &mut egui::Ui) {
+        ui.with_layout(
+            egui::Layout::left_to_right(egui::Align::TOP).with_main_justify(true),
+            |ui| ui.label(egui::RichText::new("Here the list of found phrases will appear").size(28.)),
+        );
+    }
 }
 
 impl eframe::App for HanziApp {
@@ -61,43 +110,13 @@ impl eframe::App for HanziApp {
         // CREATE UI
         egui::CentralPanel::default().show(ctx, |ui| {
             ui.vertical(|ui| {
-                ui.with_layout(
-                    egui::Layout::left_to_right(egui::Align::TOP).with_main_justify(true),
-                    |ui| {
-                        egui::TextEdit::singleline(&mut self.input)
-                            .id(egui::Id::new("hanzi_editor"))
-                            .horizontal_align(egui::Align::Center)
-                            .text_color(egui::Color32::YELLOW)
-                            .margin(egui::Margin::same(16))
-                            .font(egui::FontId::new(64., egui::FontFamily::Proportional))
-                            .ui(ui)
-                    },
-                );
-                egui::Frame::new().inner_margin(18.).show(ui, |ui| {
-                    ui.columns_const(|[col_1, col_2]| {
-                        col_2.vertical(|ui| {
-                            ui.label(
-                                egui::RichText::new(
-                                    self.phrase
-                                        .as_ref()
-                                        .map(|p| p.translation.clone())
-                                        .unwrap_or_default(),
-                                )
-                                .size(28.),
-                            )
-                        });
-                        col_1.vertical(|ui| {
-                            ui.label(
-                                egui::RichText::new(
-                                    self.phrase
-                                        .as_ref()
-                                        .map(|p| p.romanization.clone())
-                                        .unwrap_or_default(),
-                                )
-                                .size(28.),
-                            )
-                        });
-                    })
+                self.input(ui);
+                egui::Frame::NONE.inner_margin(18.).show(ui, |ui| {
+                    if self.phrase.is_some() {
+                        self.translation(ui);
+                    } else if !self.phrases.is_empty() {
+                        self.phrase_list(ui);
+                    }
                 });
                 ui.with_layout(egui::Layout::bottom_up(egui::Align::Center), |ui| {
                     egui::Hyperlink::from_label_and_url("egui", "https://github.com/emilk/egui").ui(ui);
