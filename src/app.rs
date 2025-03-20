@@ -100,11 +100,20 @@ impl HanziApp {
         });
     }
 
-    fn phrase_list(&mut self, ui: &mut egui::Ui) {
-        ui.with_layout(
-            egui::Layout::left_to_right(egui::Align::TOP).with_main_justify(true),
-            |ui| ui.label(egui::RichText::new("Here the list of found phrases will appear").size(28.)),
-        );
+    fn translations(&mut self, ui: &mut egui::Ui) {
+        self.phrases.iter().for_each(|phrase| {
+            ui.columns_const(|[col_1, col_2, col_3]| {
+                col_3.vertical(|ui| ui.label(egui::RichText::new(phrase.translation.clone()).size(28.)));
+                col_2.vertical(|ui| ui.label(egui::RichText::new(phrase.romanization.clone()).size(28.)));
+                col_1.vertical_centered_justified(|ui| {
+                    ui.label(
+                        egui::RichText::new(phrase.text.clone())
+                            .color(egui::Color32::YELLOW)
+                            .size(44.),
+                    )
+                });
+            });
+        });
     }
 }
 
@@ -118,7 +127,7 @@ impl eframe::App for HanziApp {
                     if self.phrase.is_some() {
                         self.translation(ui);
                     } else if !self.phrases.is_empty() {
-                        self.phrase_list(ui);
+                        self.translations(ui);
                     }
                 });
                 ui.with_layout(egui::Layout::bottom_up(egui::Align::Center), |ui| {

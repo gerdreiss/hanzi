@@ -21,7 +21,7 @@ async fn main() -> eframe::Result {
 
     let home_dir = std::env::var("HOME").expect("$HOME environment variable to exist");
     let hanzi_dir = format!("{}/.hanzi", home_dir);
-    if !std::path::Path::new(&hanzi_dir).is_dir() {
+    if !std::path::Path::new(&hanzi_dir).exists() {
         std::fs::create_dir_all(&hanzi_dir).expect("Successful folder creation");
     }
 
