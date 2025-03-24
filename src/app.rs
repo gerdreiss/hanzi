@@ -79,24 +79,14 @@ impl HanziApp {
         ui.columns_const(|[col_1, col_2]| {
             col_2.vertical(|ui| {
                 ui.label(
-                    egui::RichText::new(
-                        self.phrase
-                            .as_ref()
-                            .map(|p| p.translation.clone())
-                            .unwrap_or_default(),
-                    )
-                    .size(28.),
+                    egui::RichText::new(self.phrase.as_ref().map(|p| p.translation.clone()).unwrap_or_default())
+                        .size(28.),
                 )
             });
             col_1.vertical(|ui| {
                 ui.label(
-                    egui::RichText::new(
-                        self.phrase
-                            .as_ref()
-                            .map(|p| p.romanization.clone())
-                            .unwrap_or_default(),
-                    )
-                    .size(28.),
+                    egui::RichText::new(self.phrase.as_ref().map(|p| p.romanization.clone()).unwrap_or_default())
+                        .size(28.),
                 )
             });
         });
@@ -244,11 +234,7 @@ impl eframe::App for HanziApp {
                     self.phrase = Some(response);
                 }
                 Ok(Err(err)) => {
-                    log::error!(
-                        "Error occurred when querying LLM: {} caused by {}",
-                        err,
-                        err.cause()
-                    );
+                    log::error!("Error occurred when querying LLM: {} caused by {}", err, err.cause());
                     self.llm_query = None;
                     self.llm_query_start = None;
                     self.spinner.close();
@@ -277,19 +263,49 @@ impl eframe::App for HanziApp {
                 }
             }
         }
+
         if self.open_about {
-            egui::Window::new("About") //
-                .resizable(false) //
-                .show(ctx, |ui| {
-                    ui.monospace("Hanzi");
-                    ui.label("A little helper for languare learners");
-                    ui.label("Written in Rust");
-                    ui.label("Powered by Egui (https://github.com/emilk/egui)");
-                    ui.label("Hosted on Github (https://github.com/gerdreiss/hanzi");
-                    if ui.button("OK").clicked() {
-                        self.open_about = false;
-                    }
+            egui::Window::new("About").auto_sized().show(ctx, |ui| {
+                egui::Frame::NONE.inner_margin(18.).show(ui, |ui| {
+                    ui.vertical(|ui| {
+                        ui.label(egui::RichText::new("Hanzi").size(20.).color(egui::Color32::YELLOW));
+                        ui.label(egui::RichText::new("A little helper for languare learners").size(20.));
+                        ui.label(egui::RichText::new("Copyright (c) 2025, Gerd Reiss").size(20.));
+                        ui.horizontal(|ui| {
+                            ui.label(egui::RichText::new("Written In").size(20.));
+                            egui::Hyperlink::from_label_and_url(
+                                egui::RichText::new("Rust").size(20.),
+                                "https://www.rust-lang.org",
+                            )
+                            .ui(ui);
+                        });
+                        ui.horizontal(|ui| {
+                            ui.label(egui::RichText::new("Powered by").size(20.));
+                            egui::Hyperlink::from_label_and_url(
+                                egui::RichText::new("Egui").size(20.),
+                                "https://github.com/emilk/egui",
+                            )
+                            .ui(ui);
+                        });
+                        ui.horizontal(|ui| {
+                            ui.label(egui::RichText::new("Written in Rust").size(20.));
+                            egui::Hyperlink::from_label_and_url(
+                                egui::RichText::new("Rust").size(20.),
+                                "https://www.rust-lang.org",
+                            )
+                            .ui(ui);
+                        });
+                        ui.horizontal(|ui| {
+                            ui.label(egui::RichText::new("Hosted on").size(20.));
+                            egui::Hyperlink::from_label_and_url(
+                                egui::RichText::new("Github").size(20.),
+                                "https://github.com/gerdreiss/hanzi",
+                            )
+                            .ui(ui);
+                        });
+                    });
                 });
+            });
         }
 
         self.spinner.update_with_content(ctx, |ui| {
