@@ -25,6 +25,7 @@ pub(crate) struct HanziApp {
     llm_query_start: Option<Instant>,
     phrase: Option<model::Phrase>,
     phrases: Vec<model::Phrase>,
+    open_about: bool,
 }
 
 impl HanziApp {
@@ -55,6 +56,7 @@ impl HanziApp {
             llm_query_start: None,
             phrase: None,
             phrases: Vec::new(),
+            open_about: false,
         }
     }
 
@@ -206,10 +208,7 @@ impl eframe::App for HanziApp {
                 .show_progress_bar(true);
         }
         if ctx.input_mut(|i| i.consume_shortcut(&shortcuts::about(self.is_macos))) {
-            self.toasts
-                .info("This is where the about dialog will open")
-                .duration(Some(Duration::from_secs(5)))
-                .show_progress_bar(true);
+            self.open_about = !self.open_about;
         }
         if ctx.input(|i| i.key_pressed(egui::Key::F1)) {
             self.toasts
@@ -277,6 +276,20 @@ impl eframe::App for HanziApp {
                     }
                 }
             }
+        }
+        if self.open_about {
+            egui::Window::new("About") //
+                .resizable(false) //
+                .show(ctx, |ui| {
+                    ui.monospace("Hanzi");
+                    ui.label("A little helper for languare learners");
+                    ui.label("Written in Rust");
+                    ui.label("Powered by Egui (https://github.com/emilk/egui)");
+                    ui.label("Hosted on Github (https://github.com/gerdreiss/hanzi");
+                    if ui.button("OK").clicked() {
+                        self.open_about = false;
+                    }
+                });
         }
 
         self.spinner.update_with_content(ctx, |ui| {
