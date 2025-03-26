@@ -136,6 +136,12 @@ impl eframe::App for HanziApp {
                 .duration(Some(Duration::from_secs(5)))
                 .show_progress_bar(true);
         }
+        if ctx.input_mut(|i| i.consume_shortcut(&shortcuts::learn(self.is_macos))) {
+            self.toasts
+                .info("This is where the learning mask will open")
+                .duration(Some(Duration::from_secs(5)))
+                .show_progress_bar(true);
+        }
         if ctx.input_mut(|i| i.consume_shortcut(&shortcuts::save(self.is_macos))) {
             if let Some(phrase) = self.phrase.as_mut() {
                 match persistence::write::phrase(
