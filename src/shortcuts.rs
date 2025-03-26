@@ -1,3 +1,7 @@
+pub(crate) fn edit(is_macos: bool) -> egui::KeyboardShortcut {
+    egui::KeyboardShortcut::new(modifiers(is_macos), egui::Key::E)
+}
+
 pub(crate) fn save(is_macos: bool) -> egui::KeyboardShortcut {
     egui::KeyboardShortcut::new(modifiers(is_macos), egui::Key::S)
 }
