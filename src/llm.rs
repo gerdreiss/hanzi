@@ -71,12 +71,8 @@ async fn get_model_name(ollama: &Ollama) -> Result<String, LLMError> {
 
 fn get_prompt(request: &str) -> String {
     let prompt = r#"
-Translate the following Chinese phrase to English, and provide the Pinyin for it.
-Format the response as JSON.
-The JSON should include the following fields:
-- "original": the original Chinese phrase
-- "pinyin": the original Chinese phrase written in Pinyin
-- "translation": the English translation
+Translate the following Chinese phrase into English and return the result as JSON containing the original text as 'original', it's Pinyin as 'pinyin', and the translation as 'translation'.
+
 Chinese phrase: "#;
 
     prompt.to_owned() + request
