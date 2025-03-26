@@ -3,8 +3,8 @@
 diesel::table! {
     phrases (id) {
         id -> Integer,
-        text -> Text,
-        translation -> Text,
+        original -> Text,
         pinyin -> Text,
+        translation -> Text,
     }
 }

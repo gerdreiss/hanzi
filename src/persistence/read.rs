@@ -10,7 +10,7 @@ pub(crate) fn phrases(database_url: &str, term: &str) -> Result<Vec<model::Phras
     let mut conn = connection::create(database_url)?;
 
     let result = phrases::table()
-        .filter(text.like(format!("%{}%", term)))
+        .filter(original.like(format!("%{}%", term)))
         .load(&mut conn)?;
 
     Ok(result)

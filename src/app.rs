@@ -51,7 +51,7 @@ impl HanziApp {
                 .spinner_size(60.)
                 .spinner_color(egui::Color32::YELLOW),
             is_macos: cc.egui_ctx.os() == OperatingSystem::Mac,
-            input: "学习汉语很有趣!".to_owned(),
+            input: "学习汉语很有趣！".to_owned(),
             llm_query: None,
             llm_query_start: None,
             phrase: None,
@@ -98,7 +98,7 @@ impl HanziApp {
                 col_2.vertical(|ui| ui.label(egui::RichText::new(phrase.pinyin.clone()).size(28.)));
                 col_1.vertical_centered_justified(|ui| {
                     ui.label(
-                        egui::RichText::new(phrase.text.clone())
+                        egui::RichText::new(phrase.original.clone())
                             .color(egui::Color32::YELLOW)
                             .size(44.),
                     )
@@ -134,9 +134,9 @@ impl eframe::App for HanziApp {
             if let Some(phrase) = self.phrase.as_mut() {
                 match persistence::write::phrase(
                     &self.database_url,
-                    phrase.text.clone(),
-                    phrase.translation.clone(),
+                    phrase.original.clone(),
                     phrase.pinyin.clone(),
+                    phrase.translation.clone(),
                 ) {
                     Ok(_) => self
                         .toasts
@@ -230,7 +230,7 @@ impl eframe::App for HanziApp {
                     self.llm_query = None;
                     self.llm_query_start = None;
                     self.spinner.close();
-                    self.input = response.text.clone();
+                    self.input = response.original.clone();
                     self.phrase = Some(response);
                 }
                 Ok(Err(err)) => {

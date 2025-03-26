@@ -56,10 +56,10 @@ pub(crate) async fn query(query: Query) -> Result<model::Phrase, LLMError> {
 
 async fn get_model_name(ollama: &Ollama) -> Result<String, LLMError> {
     let models = ollama.list_local_models().await?;
-    let model_name = if models.iter().any(|model| model.name == "llama3.2:latest") {
-        Ok("llama3.2:latest".to_string())
+    let model_name = if models.iter().any(|model| model.name == "mistral:latest") {
+        Ok("mistral:latest".to_string())
     } else {
-        log::warn!("It is recommended to install the 'llama3.2' model for best results");
+        log::warn!("It is recommended to install the 'mistral' model for best results");
         models
             .first()
             .map(|model| model.name.clone())
@@ -70,11 +70,16 @@ async fn get_model_name(ollama: &Ollama) -> Result<String, LLMError> {
 }
 
 fn get_prompt(request: &str) -> String {
-    let prompt = format!(
-        "Translate '{}' into English with pinyin. Format the result as JSON with the original text as element 'text', translation as element 'translation', and pinyin as element 'pinyin'",
-        request
-    );
-    prompt
+    let prompt = r#"
+Translate the following Chinese phrase to English, and provide the Pinyin for it.
+Format the response as JSON.
+The JSON should include the following fields:
+- "original": the original Chinese phrase
+- "pinyin": the original Chinese phrase written in Pinyin
+- "translation": the English translation
+Chinese phrase: "#;
+
+    prompt.to_owned() + request
 }
 
 async fn query_llm(ollama: Ollama, model_name: String, prompt: String) -> Result<String, LLMError> {
