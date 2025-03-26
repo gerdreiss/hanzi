@@ -85,8 +85,7 @@ impl HanziApp {
             });
             col_1.vertical(|ui| {
                 ui.label(
-                    egui::RichText::new(self.phrase.as_ref().map(|p| p.romanization.clone()).unwrap_or_default())
-                        .size(28.),
+                    egui::RichText::new(self.phrase.as_ref().map(|p| p.pinyin.clone()).unwrap_or_default()).size(28.),
                 )
             });
         });
@@ -96,7 +95,7 @@ impl HanziApp {
         self.phrases.iter().for_each(|phrase| {
             ui.columns_const(|[col_1, col_2, col_3]| {
                 col_3.vertical(|ui| ui.label(egui::RichText::new(phrase.translation.clone()).size(28.)));
-                col_2.vertical(|ui| ui.label(egui::RichText::new(phrase.romanization.clone()).size(28.)));
+                col_2.vertical(|ui| ui.label(egui::RichText::new(phrase.pinyin.clone()).size(28.)));
                 col_1.vertical_centered_justified(|ui| {
                     ui.label(
                         egui::RichText::new(phrase.text.clone())
@@ -136,10 +135,8 @@ impl eframe::App for HanziApp {
                 match persistence::write::phrase(
                     &self.database_url,
                     phrase.text.clone(),
-                    phrase.language.name.clone(),
-                    phrase.language.code.clone(),
                     phrase.translation.clone(),
-                    Some(phrase.romanization.clone()),
+                    phrase.pinyin.clone(),
                 ) {
                     Ok(_) => self
                         .toasts
@@ -221,6 +218,9 @@ impl eframe::App for HanziApp {
                 self.llm_query_start = None;
                 self.spinner.close();
             }
+            if self.open_about {
+                self.open_about = false;
+            }
         }
 
         // HANDLE LLM QUERIES
@@ -269,7 +269,7 @@ impl eframe::App for HanziApp {
                 egui::Frame::NONE.inner_margin(18.).show(ui, |ui| {
                     ui.vertical(|ui| {
                         ui.label(egui::RichText::new("Hanzi").size(20.).color(egui::Color32::YELLOW));
-                        ui.label(egui::RichText::new("A little helper for languare learners").size(20.));
+                        ui.label(egui::RichText::new("A little helper for Chinese learners").size(20.));
                         ui.label(egui::RichText::new("Copyright (c) 2025, Gerd Reiss").size(20.));
                         ui.horizontal(|ui| {
                             ui.label(egui::RichText::new("Written In").size(20.));
@@ -286,12 +286,10 @@ impl eframe::App for HanziApp {
                                 "https://github.com/emilk/egui",
                             )
                             .ui(ui);
-                        });
-                        ui.horizontal(|ui| {
-                            ui.label(egui::RichText::new("Written in Rust").size(20.));
+                            ui.label(egui::RichText::new("and").size(20.));
                             egui::Hyperlink::from_label_and_url(
-                                egui::RichText::new("Rust").size(20.),
-                                "https://www.rust-lang.org",
+                                egui::RichText::new("Ollama").size(20.),
+                                "https://ollama.com/",
                             )
                             .ui(ui);
                         });

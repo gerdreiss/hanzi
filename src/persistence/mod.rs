@@ -1,6 +1,7 @@
 pub mod connection;
 pub mod model;
 pub mod read;
+pub mod schema;
 pub mod write;
 
 use thiserror::Error as ThisError;

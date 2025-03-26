@@ -56,10 +56,10 @@ pub(crate) async fn query(query: Query) -> Result<model::Phrase, LLMError> {
 
 async fn get_model_name(ollama: &Ollama) -> Result<String, LLMError> {
     let models = ollama.list_local_models().await?;
-    let model_name = if models.iter().any(|model| model.name == "mistral:latest") {
-        Ok("mistral:latest".to_string())
+    let model_name = if models.iter().any(|model| model.name == "llama3.2:latest") {
+        Ok("llama3.2:latest".to_string())
     } else {
-        log::warn!("It is recommended to install the 'mistral' model for best results");
+        log::warn!("It is recommended to install the 'llama3.2' model for best results");
         models
             .first()
             .map(|model| model.name.clone())
@@ -71,7 +71,7 @@ async fn get_model_name(ollama: &Ollama) -> Result<String, LLMError> {
 
 fn get_prompt(request: &str) -> String {
     let prompt = format!(
-        "Translate '{}' into English and provide romanization in case of non-latin alphabet, pronunciation otherwise. Format the result as JSON with the original text as element 'text', translation as element 'translation', the language of the text as a nested object named 'language' with elements 'name' and 'code' that contain the name of the language and its ISO code respectively, and the romanization as element 'romanization'",
+        "Translate '{}' into English with pinyin. Format the result as JSON with the original text as element 'text', translation as element 'translation', and pinyin as element 'pinyin'",
         request
     );
     prompt
@@ -79,10 +79,7 @@ fn get_prompt(request: &str) -> String {
 
 async fn query_llm(ollama: Ollama, model_name: String, prompt: String) -> Result<String, LLMError> {
     let llm_response = ollama
-        .send_chat_messages(ChatMessageRequest::new(
-            model_name,
-            vec![ChatMessage::user(prompt)],
-        ))
+        .send_chat_messages(ChatMessageRequest::new(model_name, vec![ChatMessage::user(prompt)]))
         .await
         .map(|res| res.message.content)?;
     Ok(llm_response)

@@ -1,0 +1,6 @@
+CREATE TABLE phrases (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    text TEXT NOT NULL UNIQUE,
+    translation TEXT NOT NULL,
+    pinyin TEXT
+);

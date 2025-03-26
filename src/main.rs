@@ -2,7 +2,6 @@ mod app;
 mod llm;
 mod model;
 mod persistence;
-mod schema;
 mod screensize;
 mod shortcuts;
 mod transform;
