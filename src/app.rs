@@ -146,9 +146,9 @@ impl eframe::App for HanziApp {
             if let Some(phrase) = self.phrase.as_mut() {
                 match persistence::write::phrase(
                     &self.database_url,
-                    phrase.original.clone(),
-                    phrase.pinyin.clone(),
-                    phrase.translation.clone(),
+                    &phrase.original,
+                    &phrase.pinyin,
+                    &phrase.translation,
                 ) {
                     Ok(_) => self
                         .toasts
