@@ -11,7 +11,8 @@ pub(crate) fn phrases(database_url: &str, term: &str) -> Result<Vec<model::Phras
 
     let result = phrases::table()
         .filter(original.like(format!("%{}%", term)))
-        .load(&mut conn)?;
+        .load(&mut conn)
+        .inspect_err(|error| log::error!("Failed to load phrases by term {}: {:?}", term, error))?;
 
     Ok(result)
 }
