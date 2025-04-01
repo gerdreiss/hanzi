@@ -25,7 +25,7 @@ pub(crate) fn setting(database_url: &str, setting_name: &str) -> Result<Vec<mode
     let result = settings::table()
         .filter(name.eq(setting_name))
         .load(&mut conn)
-        .inspect_err(|error| log::error!("Failed to load phrases by name {}: {:?}", setting_name, error))?;
+        .inspect_err(|error| log::error!("Failed to load setting by name {}: {:?}", setting_name, error))?;
 
     Ok(result)
 }

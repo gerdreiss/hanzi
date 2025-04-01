@@ -1,4 +1,5 @@
 pub mod connection;
+pub mod migration;
 pub mod model;
 pub mod read;
 pub mod schema;
@@ -12,8 +13,4 @@ pub(crate) enum PersistenceError {
     Connection(#[from] diesel::ConnectionError),
     #[error("Executing statement failed")]
     Execution(#[from] diesel::result::Error),
-    #[error("Insert into {0} failed")]
-    Insert(String),
-    #[error("Not found")]
-    NotFound,
 }
