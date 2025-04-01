@@ -30,3 +30,28 @@ pub(crate) fn phrase(
 
     Ok(result)
 }
+
+pub(crate) fn setting(
+    database_url: &str,
+    setting_name: &str,
+    setting_value: &str,
+) -> Result<usize, super::PersistenceError> {
+    use crate::persistence::schema::settings::dsl::*;
+
+    let mut conn = connection::create(database_url)?;
+
+    let new_phrase = model::NewSetting {
+        name: setting_name.to_owned(),
+        value: setting_value.to_owned(),
+    };
+
+    let result = diesel::insert_into(settings::table())
+        .values(&new_phrase)
+        .on_conflict(name)
+        .do_update()
+        .set(&new_phrase)
+        .execute(&mut conn)
+        .inspect_err(|error| log::error!("Failed to upsert setting {}: {:?}", setting_name, error))?;
+
+    Ok(result)
+}

@@ -16,6 +16,7 @@ const MIGRATIONS: EmbeddedMigrations = embed_migrations!("./migrations");
 
 #[tokio::main]
 async fn main() -> eframe::Result {
+    dotenv::dotenv().ok();
     pretty_env_logger::init();
 
     let home_dir = std::env::var("HOME").expect("$HOME environment variable to exist");

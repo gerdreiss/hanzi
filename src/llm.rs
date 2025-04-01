@@ -19,6 +19,8 @@ pub(crate) enum LLMError {
     InvalidJson(String),
     #[error("LLM model not found")]
     ModelNotFound,
+    #[error("Environment variable not set")]
+    EnvVar(#[from] std::env::VarError),
 }
 
 impl LLMError {
@@ -34,6 +36,7 @@ impl LLMError {
             LLMError::LLMResponse(error) => error.to_string(),
             LLMError::InvalidJson(error) => error.to_string(),
             LLMError::ModelNotFound => "LLM model not found".to_string(),
+            LLMError::EnvVar(error) => error.to_string(),
         }
     }
 }

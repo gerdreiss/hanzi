@@ -8,6 +8,7 @@ authors = ["Gerd Reiss <gerd@reiss.pro>"]
 [dependencies]
 diesel = { version = "2.2.8", default-features = false, features = ["sqlite"] }
 diesel_migrations = { version = "2.2.0", features = ["sqlite"] }
+dotenv = "0.15.0"
 eframe = "0.31.1"
 egui = "0.31.1"
 egui-modal-spinner = "0.3.0"
