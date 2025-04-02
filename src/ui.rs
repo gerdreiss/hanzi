@@ -12,7 +12,7 @@ impl eframe::App for app::HanziApp {
                 ui.with_layout(
                     egui::Layout::left_to_right(egui::Align::TOP).with_main_justify(true),
                     |ui| {
-                        egui::TextEdit::singleline(&mut self.input)
+                        egui::TextEdit::singleline(&mut self.phrase_input)
                             .id(egui::Id::new("hanzi_editor"))
                             .horizontal_align(egui::Align::Center)
                             .text_color(egui::Color32::YELLOW)
@@ -24,21 +24,39 @@ impl eframe::App for app::HanziApp {
                 egui::Frame::NONE.inner_margin(18.).show(ui, |ui| {
                     if self.phrase.is_some() {
                         ui.columns_const(|[col_1, col_2]| {
-                            col_2.vertical(|ui| {
-                                ui.label(
-                                    egui::RichText::new(
-                                        self.phrase.as_ref().map(|p| p.translation.clone()).unwrap_or_default(),
-                                    )
-                                    .size(28.),
-                                )
+                            col_1.horizontal(|ui| {
+                                if self.edit_result {
+                                    ui.with_layout(
+                                        egui::Layout::left_to_right(egui::Align::LEFT).with_main_justify(true),
+                                        |ui| {
+                                            egui::TextEdit::singleline(&mut self.pinyin_input)
+                                                .id(egui::Id::new("pinyin_editor"))
+                                                .font(egui::FontId::new(28., egui::FontFamily::Proportional))
+                                                .ui(ui)
+                                        },
+                                    );
+                                } else if let Some(p) = &self.phrase {
+                                    ui.label(egui::RichText::new(p.pinyin.clone()).size(28.));
+                                } else {
+                                    ui.label("");
+                                }
                             });
-                            col_1.vertical(|ui| {
-                                ui.label(
-                                    egui::RichText::new(
-                                        self.phrase.as_ref().map(|p| p.pinyin.clone()).unwrap_or_default(),
-                                    )
-                                    .size(28.),
-                                )
+                            col_2.horizontal(|ui| {
+                                if self.edit_result {
+                                    ui.with_layout(
+                                        egui::Layout::left_to_right(egui::Align::LEFT).with_main_justify(true),
+                                        |ui| {
+                                            egui::TextEdit::singleline(&mut self.translation_input)
+                                                .id(egui::Id::new("translation_editor"))
+                                                .font(egui::FontId::new(28., egui::FontFamily::Proportional))
+                                                .ui(ui)
+                                        },
+                                    );
+                                } else if let Some(p) = &self.phrase {
+                                    ui.label(egui::RichText::new(p.translation.clone()).size(28.));
+                                } else {
+                                    ui.label("");
+                                }
                             });
                         });
                     } else if !self.phrases.is_empty() {
@@ -68,7 +86,7 @@ impl eframe::App for app::HanziApp {
 
         // HANDLE EVENTS
         if ctx.input_mut(|i| i.consume_shortcut(&shortcuts::edit(self.is_macos))) {
-            self.edit_translation_result();
+            self.edit();
         }
         if ctx.input_mut(|i| i.consume_shortcut(&shortcuts::learn(self.is_macos))) {
             self.learn();
@@ -110,7 +128,7 @@ impl eframe::App for app::HanziApp {
                     self.llm_query = None;
                     self.llm_query_start = None;
                     self.spinner.close();
-                    self.input = response.original.clone();
+                    self.phrase_input = response.original.clone();
                     self.phrase = Some(response);
                 }
                 Ok(Err(err)) => {
