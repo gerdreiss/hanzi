@@ -1,7 +1,6 @@
 use eframe::CreationContext;
 use eframe::epaint::text::FontInsert;
 use eframe::epaint::text::InsertFontFamily;
-use egui::Widget;
 use egui::os::OperatingSystem;
 use egui_modal_spinner::ModalSpinner;
 use egui_notify::Anchor;
@@ -13,7 +12,6 @@ use std::time::Instant;
 use crate::llm;
 use crate::model;
 use crate::persistence;
-use crate::shortcuts;
 
 pub(crate) struct HanziApp {
     pub(crate) database_url: String,
@@ -25,8 +23,9 @@ pub(crate) struct HanziApp {
     pub(crate) llm_query_start: Option<Instant>,
     pub(crate) phrase: Option<model::Phrase>,
     pub(crate) phrases: Vec<model::Phrase>,
-    pub(crate) open_about: bool,
     pub(crate) open_settings: bool,
+    pub(crate) open_about: bool,
+    pub(crate) open_help: bool,
 }
 
 impl HanziApp {
@@ -57,8 +56,112 @@ impl HanziApp {
             llm_query_start: None,
             phrase: None,
             phrases: Vec::new(),
-            open_about: false,
             open_settings: false,
+            open_about: false,
+            open_help: false,
+        }
+    }
+}
+
+impl HanziApp {
+    pub(crate) fn save_phrase(&mut self) {
+        if let Some(phrase) = self.phrase.as_mut() {
+            match persistence::write::phrase(
+                &self.database_url,
+                &phrase.original,
+                &phrase.pinyin,
+                &phrase.translation,
+            ) {
+                Ok(_) => self
+                    .toasts
+                    .info("Phrase saved successfully")
+                    .duration(Some(Duration::from_secs(5)))
+                    .show_progress_bar(true),
+                Err(err) => {
+                    log::error!("{}", err);
+                    self.toasts
+                        .error("Phrase could not be saved")
+                        .duration(Some(Duration::from_secs(5)))
+                        .show_progress_bar(true)
+                }
+            };
+        } else {
+            self.toasts
+                .error("Nothing to save")
+                .duration(Some(Duration::from_secs(5)))
+                .show_progress_bar(true);
+        }
+    }
+
+    pub(crate) fn edit_translation_result(&mut self) {
+        self.toasts
+            .info("This is where the results can be edited")
+            .duration(Some(Duration::from_secs(5)))
+            .show_progress_bar(true);
+    }
+
+    pub(crate) fn learn(&mut self) {
+        self.toasts
+            .info("This is where the learning mask will open")
+            .duration(Some(Duration::from_secs(5)))
+            .show_progress_bar(true);
+    }
+
+    pub(crate) fn read_phrases(&mut self) {
+        match persistence::read::phrases(&self.database_url, &self.input) {
+            Ok(phrases) => {
+                if phrases.is_empty() {
+                    self.toasts
+                        .info("Nothing found")
+                        .duration(Some(Duration::from_secs(5)))
+                        .show_progress_bar(true);
+                } else if phrases.len() == 1 {
+                    self.phrase = phrases
+                        .into_iter()
+                        .map(model::Phrase::from)
+                        .collect::<Vec<_>>()
+                        .first()
+                        .cloned();
+                    self.phrases = Vec::new();
+                } else {
+                    self.phrase = None;
+                    self.phrases = phrases.into_iter().map(model::Phrase::from).collect();
+                }
+            }
+            Err(err) => {
+                log::error!("Failed to load phrases: {}", err);
+                self.toasts
+                    .info("Failed to load phrases")
+                    .duration(Some(Duration::from_secs(5)))
+                    .show_progress_bar(true);
+            }
+        }
+    }
+
+    pub(crate) fn query_llm(&mut self) {
+        self.phrase = None;
+        self.llm_query = Some(Promise::spawn_async(llm::query(llm::Query {
+            text: self.input.to_owned(),
+        })));
+        self.llm_query_start = Some(Instant::now());
+        self.spinner.open();
+    }
+
+    pub(crate) fn handle_escape(&mut self) {
+        if let Some(q) = self.llm_query.take() {
+            q.abort();
+            self.llm_query = None;
+            self.llm_query_start = None;
+            self.spinner.close();
+        }
+        if self.open_about {
+            self.open_about = false;
+        }
+        if self.open_help {
+            self.open_help = false;
+        }
+        if self.open_settings {
+            self.open_settings = false;
         }
     }
 }

@@ -1,12 +1,7 @@
 use egui::Widget;
-use poll_promise::Promise;
 use std::time::Duration;
-use std::time::Instant;
 
 use crate::app;
-use crate::llm;
-use crate::model;
-use crate::persistence;
 use crate::shortcuts;
 
 impl eframe::App for app::HanziApp {
@@ -73,80 +68,23 @@ impl eframe::App for app::HanziApp {
 
         // HANDLE EVENTS
         if ctx.input_mut(|i| i.consume_shortcut(&shortcuts::edit(self.is_macos))) {
-            self.toasts
-                .info("This is where the results can be edited")
-                .duration(Some(Duration::from_secs(5)))
-                .show_progress_bar(true);
+            self.edit_translation_result();
         }
         if ctx.input_mut(|i| i.consume_shortcut(&shortcuts::learn(self.is_macos))) {
-            self.toasts
-                .info("This is where the learning mask will open")
-                .duration(Some(Duration::from_secs(5)))
-                .show_progress_bar(true);
+            self.learn();
         }
         if ctx.input_mut(|i| i.consume_shortcut(&shortcuts::save(self.is_macos))) {
-            if let Some(phrase) = self.phrase.as_mut() {
-                match persistence::write::phrase(
-                    &self.database_url,
-                    &phrase.original,
-                    &phrase.pinyin,
-                    &phrase.translation,
-                ) {
-                    Ok(_) => self
-                        .toasts
-                        .info("Phrase saved successfully")
-                        .duration(Some(Duration::from_secs(5)))
-                        .show_progress_bar(true),
-                    Err(err) => {
-                        log::error!("{}", err);
-                        self.toasts
-                            .error("Phrase could not be saved")
-                            .duration(Some(Duration::from_secs(5)))
-                            .show_progress_bar(true)
-                    }
-                };
-            } else {
-                self.toasts
-                    .error("Nothing to save")
-                    .duration(Some(Duration::from_secs(5)))
-                    .show_progress_bar(true);
-            }
+            self.save_phrase();
         }
         if ctx.input_mut(|i| i.consume_shortcut(&shortcuts::find(self.is_macos))) {
-            match persistence::read::phrases(&self.database_url, &self.input) {
-                Ok(phrases) => {
-                    if phrases.is_empty() {
-                        self.toasts
-                            .info("Nothing found")
-                            .duration(Some(Duration::from_secs(5)))
-                            .show_progress_bar(true);
-                    } else if phrases.len() == 1 {
-                        self.phrase = phrases
-                            .into_iter()
-                            .map(model::Phrase::from)
-                            .collect::<Vec<_>>()
-                            .first()
-                            .cloned();
-                        self.phrases = Vec::new();
-                    } else {
-                        self.phrase = None;
-                        self.phrases = phrases.into_iter().map(model::Phrase::from).collect();
-                    }
-                }
-                Err(err) => {
-                    log::error!("Failed to load phrases: {}", err);
-                    self.toasts
-                        .info("Failed to load phrases")
-                        .duration(Some(Duration::from_secs(5)))
-                        .show_progress_bar(true);
-                }
-            }
+            self.read_phrases();
         }
         if ctx.input_mut(|i| i.consume_shortcut(&shortcuts::settings(self.is_macos))) {
             self.toasts
                 .info("This is where the settings will open")
                 .duration(Some(Duration::from_secs(5)))
                 .show_progress_bar(true);
+            self.open_settings = !self.open_settings;
         }
         if ctx.input_mut(|i| i.consume_shortcut(&shortcuts::about(self.is_macos))) {
             self.open_about = !self.open_about;
@@ -156,25 +94,13 @@ impl eframe::App for app::HanziApp {
                 .info("This is where the help will be displayed")
                 .duration(Some(Duration::from_secs(5)))
                 .show_progress_bar(true);
+            self.open_help = !self.open_help;
         }
         if ctx.input(|i| i.key_pressed(egui::Key::Enter)) && self.llm_query.is_none() {
-            self.phrase = None;
-            self.llm_query = Some(Promise::spawn_async(llm::query(llm::Query {
-                text: self.input.to_owned(),
-            })));
-            self.llm_query_start = Some(Instant::now());
-            self.spinner.open();
+            self.query_llm();
         }
         if ctx.input(|i| i.key_pressed(egui::Key::Escape)) {
-            if let Some(q) = self.llm_query.take() {
-                q.abort();
-                self.llm_query = None;
-                self.llm_query_start = None;
-                self.spinner.close();
-            }
-            if self.open_about {
-                self.open_about = false;
-            }
+            self.handle_escape();
         }
 
         // HANDLE LLM QUERIES
