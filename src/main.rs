@@ -18,7 +18,6 @@ const MIGRATIONS: EmbeddedMigrations = embed_migrations!("./migrations");
 #[tokio::main]
 async fn main() -> eframe::Result {
     dotenv::dotenv().ok();
-    // pretty_env_logger::init();
     hanzi_logging::init();
 
     let database_path = database_migration::run(MIGRATIONS);
