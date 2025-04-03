@@ -1,5 +1,5 @@
-pub mod connection;
-pub mod migration;
+pub mod database_connection;
+pub mod database_migration;
 pub mod model;
 pub mod read;
 pub mod schema;

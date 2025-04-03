@@ -1,7 +1,7 @@
 use diesel::associations::HasTable;
 use diesel::prelude::*;
 
-use crate::persistence::connection;
+use crate::persistence::database_connection;
 use crate::persistence::model;
 
 pub(crate) fn phrase(
@@ -12,7 +12,7 @@ pub(crate) fn phrase(
 ) -> Result<usize, super::PersistenceError> {
     use crate::persistence::schema::phrases::dsl::*;
 
-    let mut conn = connection::create(database_url)?;
+    let mut conn = database_connection::create(database_url)?;
 
     let new_phrase = model::NewPhrase {
         original: phrase_text.to_owned(),
@@ -38,7 +38,7 @@ pub(crate) fn setting(
 ) -> Result<usize, super::PersistenceError> {
     use crate::persistence::schema::settings::dsl::*;
 
-    let mut conn = connection::create(database_url)?;
+    let mut conn = database_connection::create(database_url)?;
 
     let new_phrase = model::NewSetting {
         name: setting_name.to_owned(),

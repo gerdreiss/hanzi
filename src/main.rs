@@ -1,4 +1,5 @@
 mod app;
+mod hanzi_logging;
 mod llm;
 mod model;
 mod persistence;
@@ -10,16 +11,17 @@ mod ui;
 use diesel_migrations::EmbeddedMigrations;
 use diesel_migrations::embed_migrations;
 
-use crate::persistence::migration;
+use crate::persistence::database_migration;
 
 const MIGRATIONS: EmbeddedMigrations = embed_migrations!("./migrations");
 
 #[tokio::main]
 async fn main() -> eframe::Result {
     dotenv::dotenv().ok();
-    pretty_env_logger::init();
+    // pretty_env_logger::init();
+    hanzi_logging::init();
 
-    let database_path = migration::run(MIGRATIONS);
+    let database_path = database_migration::run(MIGRATIONS);
 
     let screen_size = screensize::get_primary_screen_size();
 

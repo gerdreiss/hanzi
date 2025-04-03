@@ -1,13 +1,13 @@
 use diesel::associations::HasTable;
 use diesel::prelude::*;
 
-use crate::persistence::connection;
+use crate::persistence::database_connection;
 use crate::persistence::model;
 
 pub(crate) fn phrases(database_url: &str, term: &str) -> Result<Vec<model::Phrase>, super::PersistenceError> {
     use crate::persistence::schema::phrases::dsl::*;
 
-    let mut conn = connection::create(database_url)?;
+    let mut conn = database_connection::create(database_url)?;
 
     let result = phrases::table()
         .filter(original.like(format!("%{}%", term)))
@@ -20,7 +20,7 @@ pub(crate) fn phrases(database_url: &str, term: &str) -> Result<Vec<model::Phras
 pub(crate) fn setting(database_url: &str, setting_name: &str) -> Result<Vec<model::Setting>, super::PersistenceError> {
     use crate::persistence::schema::settings::dsl::*;
 
-    let mut conn = connection::create(database_url)?;
+    let mut conn = database_connection::create(database_url)?;
 
     let result = settings::table()
         .filter(name.eq(setting_name))

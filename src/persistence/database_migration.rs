@@ -11,7 +11,7 @@ pub(crate) fn run(migrations: EmbeddedMigrations) -> String {
 
     let database_path = format!("{}/data.db", hanzi_dir);
 
-    super::connection::create(&database_path)
+    super::database_connection::create(&database_path)
         .expect("Successful connection")
         .run_pending_migrations(migrations)
         .expect("Successful migration");
