@@ -1,7 +1,7 @@
 use diesel_migrations::EmbeddedMigrations;
 use diesel_migrations::MigrationHarness;
 
-pub(crate) fn run(migrations: EmbeddedMigrations) -> String {
+pub(crate) fn run(migrations: EmbeddedMigrations) -> Result<String, super::PersistenceError> {
     let home_dir = std::env::var("HOME").expect("$HOME environment variable to exist");
     let hanzi_dir = format!("{}/.hanzi", home_dir);
 
@@ -11,10 +11,11 @@ pub(crate) fn run(migrations: EmbeddedMigrations) -> String {
 
     let database_path = format!("{}/data.db", hanzi_dir);
 
-    super::database_connection::create(&database_path)
-        .expect("Successful connection")
-        .run_pending_migrations(migrations)
-        .expect("Successful migration");
+    let mut connection = super::database_connection::create(&database_path)?;
 
-    database_path
+    connection
+        .run_pending_migrations(migrations)
+        .map_err(|err| super::PersistenceError::Migration(err.to_string()))?;
+
+    Ok(database_path)
 }

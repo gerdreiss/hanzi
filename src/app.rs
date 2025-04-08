@@ -14,6 +14,8 @@ use crate::model;
 use crate::persistence;
 
 pub(crate) struct HanziApp {
+    pub(crate) local_llm_models: Vec<String>,
+    pub(crate) selected_llm_model: String,
     pub(crate) database_url: String,
     pub(crate) toasts: Toasts,
     pub(crate) spinner: ModalSpinner,
@@ -32,7 +34,12 @@ pub(crate) struct HanziApp {
 }
 
 impl HanziApp {
-    pub(crate) fn new(cc: &CreationContext<'_>, database_url: String) -> Self {
+    pub(crate) fn new(
+        cc: &CreationContext<'_>,
+        local_llm_models: Vec<String>,
+        selected_llm_model: String,
+        database_url: String,
+    ) -> Self {
         cc.egui_ctx.add_font(FontInsert::new(
             "Han_Sans_CN_Light",
             egui::FontData::from_static(include_bytes!("../assets/Source Han Sans CN Light.otf")),
@@ -48,15 +55,17 @@ impl HanziApp {
             ],
         ));
         Self {
+            local_llm_models,
+            selected_llm_model,
             database_url,
             toasts: Toasts::default().with_anchor(Anchor::BottomRight),
             spinner: ModalSpinner::new()
                 .spinner_size(60.)
                 .spinner_color(egui::Color32::YELLOW),
             is_macos: cc.egui_ctx.os() == OperatingSystem::Mac,
-            phrase_input: "学习汉语很有趣！".to_owned(),
-            translation_input: "Learning Chinese is fun!".to_owned(),
-            pinyin_input: "Xuéxí Hànyǔ Hěn Yòuqù!".to_owned(),
+            phrase_input: String::new(),
+            translation_input: String::new(),
+            pinyin_input: String::new(),
             llm_query: None,
             llm_query_start: None,
             phrase: None,
@@ -103,6 +112,28 @@ impl HanziApp {
         }
     }
 
+    pub(crate) fn save_settings(&mut self) {
+        match persistence::write::setting(
+            &self.database_url,
+            &model::SettingName::LLM_MODEL.to_string(),
+            &self.selected_llm_model,
+        ) {
+            Ok(_) => {
+                self.toasts
+                    .info("Settings saved successfully")
+                    .duration(Some(Duration::from_secs(5)))
+                    .show_progress_bar(true);
+            }
+            Err(err) => {
+                log::error!("{}", err);
+                self.toasts
+                    .error("Settings could not be saved")
+                    .duration(Some(Duration::from_secs(5)))
+                    .show_progress_bar(true);
+            }
+        }
+    }
+
     pub(crate) fn learn(&mut self) {
         self.toasts
             .info("This is where the learning mask will open")
@@ -143,9 +174,12 @@ impl HanziApp {
 
     pub(crate) fn query_llm(&mut self) {
         self.phrase = None;
-        self.llm_query = Some(Promise::spawn_async(llm::query(llm::Query {
-            text: self.phrase_input.to_owned(),
-        })));
+        self.llm_query = Some(Promise::spawn_async(llm::query(
+            self.selected_llm_model.clone(),
+            llm::Query {
+                text: self.phrase_input.to_owned(),
+            },
+        )));
         self.llm_query_start = Some(Instant::now());
         self.spinner.open();
     }

@@ -41,35 +41,24 @@ impl LLMError {
     }
 }
 
-pub(crate) async fn query(query: Query) -> Result<model::Phrase, LLMError> {
+pub(crate) async fn list_local_model_names() -> Result<Vec<String>, LLMError> {
     let ollama = Ollama::default();
-    let model_name = get_model_name(&ollama).await?;
+    let models = ollama.list_local_models().await?;
+    Ok(models.iter().map(|model| model.name.clone()).collect())
+}
+
+pub(crate) async fn query(llm_model: String, query: Query) -> Result<model::Phrase, LLMError> {
     let prompt = get_prompt(&query.text);
 
-    log::debug!("Querying LLM model {} with prompt {}", model_name, prompt);
+    log::debug!("Querying LLM model {} with prompt {}", llm_model, prompt);
 
-    let llm_response = query_llm(ollama, model_name, prompt).await?;
+    let llm_response = query_llm(llm_model, prompt).await?;
 
     log::debug!("LLM response: {}", llm_response);
 
     let json = extract_json_string(&llm_response)?;
     let response = serde_json::from_str::<model::Phrase>(json)?;
     Ok(response)
-}
-
-async fn get_model_name(ollama: &Ollama) -> Result<String, LLMError> {
-    let models = ollama.list_local_models().await?;
-    let model_name = if models.iter().any(|model| model.name == "mistral:latest") {
-        Ok("mistral:latest".to_string())
-    } else {
-        log::warn!("It is recommended to install the 'mistral' model for best results");
-        models
-            .first()
-            .map(|model| model.name.clone())
-            .ok_or(LLMError::ModelNotFound)
-    }?;
-    log::info!("Found {} model", model_name);
-    Ok(model_name)
 }
 
 fn get_prompt(request: &str) -> String {
@@ -81,8 +70,8 @@ Chinese phrase: "#;
     prompt.to_owned() + request
 }
 
-async fn query_llm(ollama: Ollama, model_name: String, prompt: String) -> Result<String, LLMError> {
-    let llm_response = ollama
+async fn query_llm(model_name: String, prompt: String) -> Result<String, LLMError> {
+    let llm_response = Ollama::default()
         .send_chat_messages(ChatMessageRequest::new(model_name, vec![ChatMessage::user(prompt)]))
         .await
         .map(|res| res.message.content)?;

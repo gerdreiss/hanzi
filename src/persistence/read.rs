@@ -17,14 +17,14 @@ pub(crate) fn phrases(database_url: &str, term: &str) -> Result<Vec<model::Phras
     Ok(result)
 }
 
-pub(crate) fn setting(database_url: &str, setting_name: &str) -> Result<Vec<model::Setting>, super::PersistenceError> {
+pub(crate) fn setting(database_url: &str, setting_name: &str) -> Result<model::Setting, super::PersistenceError> {
     use crate::persistence::schema::settings::dsl::*;
 
     let mut conn = database_connection::create(database_url)?;
 
     let result = settings::table()
         .filter(name.eq(setting_name))
-        .load(&mut conn)
+        .first(&mut conn)
         .inspect_err(|error| log::error!("Failed to load setting by name {}: {:?}", setting_name, error))?;
 
     Ok(result)
