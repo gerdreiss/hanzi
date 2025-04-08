@@ -32,7 +32,7 @@ async fn main() -> eframe::Result {
         .unwrap_or(local_llm_models.first());
 
     let selected_llm_model =
-        settings::load_setting(&database_path, model::SettingName::LLM_MODEL).unwrap_or(default_llm_model.to_owned());
+        settings::load_setting(&database_path, model::SettingName::LlmModel).unwrap_or(default_llm_model.to_owned());
 
     let screen_size = screensize::get_primary_screen_size();
 

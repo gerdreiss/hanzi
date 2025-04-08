@@ -115,7 +115,7 @@ impl HanziApp {
     pub(crate) fn save_settings(&mut self) {
         match persistence::write::setting(
             &self.database_url,
-            &model::SettingName::LLM_MODEL.to_string(),
+            &model::SettingName::LlmModel.to_string(),
             &self.selected_llm_model,
         ) {
             Ok(_) => {

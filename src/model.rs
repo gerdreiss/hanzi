@@ -22,7 +22,7 @@ pub(crate) enum SettingError {
 }
 
 pub(crate) enum SettingName {
-    LLM_MODEL,
+    LlmModel,
 }
 
 pub(crate) struct Setting {
@@ -33,7 +33,7 @@ pub(crate) struct Setting {
 impl Display for SettingName {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            SettingName::LLM_MODEL => write!(f, "llm_model"),
+            SettingName::LlmModel => write!(f, "llm_model"),
         }
     }
 }
@@ -43,7 +43,7 @@ impl FromStr for SettingName {
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s {
-            "llm_model" => Ok(SettingName::LLM_MODEL),
+            "llm_model" => Ok(SettingName::LlmModel),
             other => Err(SettingError::Unknown(other.to_string())),
         }
     }
