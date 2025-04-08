@@ -1,5 +1,6 @@
 use serde::Deserialize;
 use serde::Serialize;
+use std::fmt::Display;
 use std::str::FromStr;
 use thiserror::Error as ThisError;
 
@@ -29,10 +30,10 @@ pub(crate) struct Setting {
     pub(crate) value: String,
 }
 
-impl ToString for SettingName {
-    fn to_string(&self) -> String {
+impl Display for SettingName {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            SettingName::LLM_MODEL => "llm_model".to_string(),
+            SettingName::LLM_MODEL => write!(f, "llm_model"),
         }
     }
 }

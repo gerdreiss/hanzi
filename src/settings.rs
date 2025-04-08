@@ -9,7 +9,7 @@ pub(crate) fn load_setting(
         .map_err(|err| match err {
             persistence::PersistenceError::Migration(migration_error) => {
                 log::error!("What???: {}", migration_error);
-                model::SettingError::What(format!("{}", migration_error))
+                model::SettingError::What(migration_error.to_string())
             }
             persistence::PersistenceError::Connection(connection_error) => {
                 log::error!("No connection to database: {}", connection_error);

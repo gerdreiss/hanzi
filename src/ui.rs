@@ -163,7 +163,6 @@ impl eframe::App for app::HanziApp {
                 egui::Frame::NONE.inner_margin(18.).show(ui, |ui| {
                     ui.vertical(|ui| {
                         ui.label(egui::RichText::new("Hanzi").size(20.).color(egui::Color32::YELLOW));
-                        ui.separator();
                         ui.label(egui::RichText::new("A little helper for Chinese learners").size(20.));
                         ui.label(egui::RichText::new("Copyright (c) 2025, Gerd Reiss").size(20.));
                         ui.horizontal(|ui| {
