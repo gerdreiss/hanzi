@@ -29,8 +29,7 @@ async fn main() -> eframe::Result {
     let default_llm_model = local_llm_models
         .iter()
         .find(|model| model.starts_with("mistral"))
-        .or(local_llm_models.first())
-        .unwrap();
+        .unwrap_or(local_llm_models.first());
 
     let selected_llm_model =
         settings::load_setting(&database_path, model::SettingName::LLM_MODEL).unwrap_or(default_llm_model.to_owned());

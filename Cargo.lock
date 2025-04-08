@@ -1609,6 +1609,7 @@ dependencies = [
  "egui-notify",
  "log",
  "log4rs",
+ "nonempty-collections",
  "ollama-rs",
  "poll-promise",
  "serde",
@@ -2361,6 +2362,12 @@ name = "nohash-hasher"
 version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2bf50223579dc7cdcfb3bfcacf7069ff68243f8c363f62ffa99cf000a6b9c451"
+
+[[package]]
+name = "nonempty-collections"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b7f301452dbaf00f14ca0c8204e46cf0c9a96f53543ac72cefa9b4d91c19e0ac"
 
 [[package]]
 name = "num-conv"

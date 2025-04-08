@@ -1,3 +1,4 @@
+use nonempty_collections::NEVec;
 use ollama_rs::Ollama;
 use ollama_rs::error::OllamaError;
 use ollama_rs::generation::chat::ChatMessage;
@@ -17,8 +18,8 @@ pub(crate) enum LLMError {
     LLMResponse(#[from] serde_json::Error),
     #[error("Invalid JSON cound not be extracted: {0}")]
     InvalidJson(String),
-    #[error("LLM model not found")]
-    ModelNotFound,
+    #[error("Local LLM models not found")]
+    LocalModelNotFound,
     #[error("Environment variable not set")]
     EnvVar(#[from] std::env::VarError),
 }
@@ -35,16 +36,17 @@ impl LLMError {
             },
             LLMError::LLMResponse(error) => error.to_string(),
             LLMError::InvalidJson(error) => error.to_string(),
-            LLMError::ModelNotFound => "LLM model not found".to_string(),
+            LLMError::LocalModelNotFound => "Local LLM model not found".to_string(),
             LLMError::EnvVar(error) => error.to_string(),
         }
     }
 }
 
-pub(crate) async fn list_local_model_names() -> Result<Vec<String>, LLMError> {
+pub(crate) async fn list_local_model_names() -> Result<NEVec<String>, LLMError> {
     let ollama = Ollama::default();
     let models = ollama.list_local_models().await?;
-    Ok(models.iter().map(|model| model.name.clone()).collect())
+    let model_names = models.iter().map(|model| model.name.clone()).collect();
+    NEVec::try_from_vec(model_names).ok_or(LLMError::LocalModelNotFound)
 }
 
 pub(crate) async fn query(llm_model: String, query: Query) -> Result<model::Phrase, LLMError> {
