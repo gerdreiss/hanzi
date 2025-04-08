@@ -50,7 +50,7 @@ async fn main() -> eframe::Result {
         Box::new(|cc| {
             Ok(Box::new(app::HanziApp::new(
                 cc,
-                local_llm_models,
+                local_llm_models.into(),
                 selected_llm_model,
                 database_path,
             )))
