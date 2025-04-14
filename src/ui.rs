@@ -158,6 +158,76 @@ impl eframe::App for app::HanziApp {
             }
         }
 
+        if self.open_help {
+            egui::Window::new("About").auto_sized().show(ctx, |ui| {
+                egui::Frame::NONE.inner_margin(18.).show(ui, |ui| {
+                    egui_extras::TableBuilder::new(ui)
+                        .column(egui_extras::Column::remainder().at_most(150.))
+                        .column(egui_extras::Column::remainder().at_most(400.))
+                        .body(|mut body| {
+                            body.row(20., |mut row| {
+                                row.col(|ui| {
+                                    ui.label(egui::RichText::new("F1").size(20.));
+                                });
+                                row.col(|ui| {
+                                    ui.label(egui::RichText::new("This help dialog").size(20.));
+                                });
+                            });
+                            body.row(20., |mut row| {
+                                row.col(|ui| {
+                                    ui.label(egui::RichText::new("Enter").size(20.));
+                                });
+                                row.col(|ui| {
+                                    ui.label(
+                                        egui::RichText::new("Translate the chinese text in the edit field").size(20.),
+                                    );
+                                });
+                            });
+                            body.row(20., |mut row| {
+                                row.col(|ui| {
+                                    ui.label(egui::RichText::new("Cmd/Ctrl+S").size(20.));
+                                });
+                                row.col(|ui| {
+                                    ui.label(egui::RichText::new("Save tranlation incl. pinyin").size(20.));
+                                });
+                            });
+                            body.row(20., |mut row| {
+                                row.col(|ui| {
+                                    ui.label(egui::RichText::new("Cmd/Ctrl+F").size(20.));
+                                });
+                                row.col(|ui| {
+                                    ui.label(egui::RichText::new("Find tranlation(s)").size(20.));
+                                });
+                            });
+                            body.row(20., |mut row| {
+                                row.col(|ui| {
+                                    ui.label(egui::RichText::new("Cmd/Ctrl+E").size(20.));
+                                });
+                                row.col(|ui| {
+                                    ui.label(egui::RichText::new("Edit translation").size(20.));
+                                });
+                            });
+                            body.row(20., |mut row| {
+                                row.col(|ui| {
+                                    ui.label(egui::RichText::new("Cmd/Ctrl+,").size(20.));
+                                });
+                                row.col(|ui| {
+                                    ui.label(egui::RichText::new("Open settings dialog").size(20.));
+                                });
+                            });
+                            body.row(20., |mut row| {
+                                row.col(|ui| {
+                                    ui.label(egui::RichText::new("Cmd/Ctrl+B").size(20.));
+                                });
+                                row.col(|ui| {
+                                    ui.label(egui::RichText::new("Open about dialog").size(20.));
+                                });
+                            });
+                        })
+                })
+            });
+        }
+
         if self.open_about {
             egui::Window::new("About").auto_sized().show(ctx, |ui| {
                 egui::Frame::NONE.inner_margin(18.).show(ui, |ui| {
