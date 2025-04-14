@@ -104,10 +104,6 @@ impl eframe::App for app::HanziApp {
             self.open_about = !self.open_about;
         }
         if ctx.input(|i| i.key_pressed(egui::Key::F1)) {
-            self.toasts
-                .info("This is where the help will be displayed")
-                .duration(Some(Duration::from_secs(5)))
-                .show_progress_bar(true);
             self.open_help = !self.open_help;
         }
         if ctx.input(|i| i.key_pressed(egui::Key::Enter)) && self.llm_query.is_none() {
