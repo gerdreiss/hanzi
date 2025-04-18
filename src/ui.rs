@@ -88,14 +88,14 @@ impl eframe::App for app::HanziApp {
         if ctx.input_mut(|i| i.consume_shortcut(&shortcuts::edit(self.is_macos))) {
             self.edit();
         }
-        if ctx.input_mut(|i| i.consume_shortcut(&shortcuts::learn(self.is_macos))) {
+        if ctx.input_mut(|i| i.consume_shortcut(&shortcuts::exercise(self.is_macos))) {
             self.learn();
         }
         if ctx.input_mut(|i| i.consume_shortcut(&shortcuts::save(self.is_macos))) {
             self.save_phrase();
         }
         if ctx.input_mut(|i| i.consume_shortcut(&shortcuts::find(self.is_macos))) {
-            self.read_phrases();
+            self.load_phrases();
         }
         if ctx.input_mut(|i| i.consume_shortcut(&shortcuts::settings(self.is_macos))) {
             self.open_settings = !self.open_settings;
@@ -155,7 +155,7 @@ impl eframe::App for app::HanziApp {
         }
 
         if self.open_help {
-            egui::Window::new("About").auto_sized().show(ctx, |ui| {
+            egui::Window::new("Usage").auto_sized().show(ctx, |ui| {
                 egui::Frame::NONE.inner_margin(18.).show(ui, |ui| {
                     egui_extras::TableBuilder::new(ui)
                         .column(egui_extras::Column::remainder().at_most(150.))
@@ -163,7 +163,7 @@ impl eframe::App for app::HanziApp {
                         .body(|mut body| {
                             body.row(20., |mut row| {
                                 row.col(|ui| {
-                                    ui.label(egui::RichText::new("F1").size(20.));
+                                    ui.label(egui::RichText::new("F1").size(20.).color(egui::Color32::YELLOW));
                                 });
                                 row.col(|ui| {
                                     ui.label(egui::RichText::new("This help dialog").size(20.));
@@ -171,7 +171,7 @@ impl eframe::App for app::HanziApp {
                             });
                             body.row(20., |mut row| {
                                 row.col(|ui| {
-                                    ui.label(egui::RichText::new("Enter").size(20.));
+                                    ui.label(egui::RichText::new("Enter").size(20.).color(egui::Color32::YELLOW));
                                 });
                                 row.col(|ui| {
                                     ui.label(
@@ -181,23 +181,35 @@ impl eframe::App for app::HanziApp {
                             });
                             body.row(20., |mut row| {
                                 row.col(|ui| {
-                                    ui.label(egui::RichText::new("Cmd/Ctrl+S").size(20.));
+                                    ui.label(
+                                        egui::RichText::new(if self.is_macos { "Cmd+S" } else { "Ctrl+S" })
+                                            .size(20.)
+                                            .color(egui::Color32::YELLOW),
+                                    );
                                 });
                                 row.col(|ui| {
-                                    ui.label(egui::RichText::new("Save tranlation incl. pinyin").size(20.));
-                                });
-                            });
-                            body.row(20., |mut row| {
-                                row.col(|ui| {
-                                    ui.label(egui::RichText::new("Cmd/Ctrl+F").size(20.));
-                                });
-                                row.col(|ui| {
-                                    ui.label(egui::RichText::new("Find tranlation(s)").size(20.));
+                                    ui.label(egui::RichText::new("Save translation incl. pinyin").size(20.));
                                 });
                             });
                             body.row(20., |mut row| {
                                 row.col(|ui| {
-                                    ui.label(egui::RichText::new("Cmd/Ctrl+E").size(20.));
+                                    ui.label(
+                                        egui::RichText::new(if self.is_macos { "Cmd+F" } else { "Ctrl+F" })
+                                            .size(20.)
+                                            .color(egui::Color32::YELLOW),
+                                    );
+                                });
+                                row.col(|ui| {
+                                    ui.label(egui::RichText::new("Find translation(s)").size(20.));
+                                });
+                            });
+                            body.row(20., |mut row| {
+                                row.col(|ui| {
+                                    ui.label(
+                                        egui::RichText::new(if self.is_macos { "Cmd+E" } else { "Ctrl+E" })
+                                            .size(20.)
+                                            .color(egui::Color32::YELLOW),
+                                    );
                                 });
                                 row.col(|ui| {
                                     ui.label(egui::RichText::new("Edit translation").size(20.));
@@ -205,7 +217,11 @@ impl eframe::App for app::HanziApp {
                             });
                             body.row(20., |mut row| {
                                 row.col(|ui| {
-                                    ui.label(egui::RichText::new("Cmd/Ctrl+,").size(20.));
+                                    ui.label(
+                                        egui::RichText::new(if self.is_macos { "Cmd+," } else { "Ctrl+," })
+                                            .size(20.)
+                                            .color(egui::Color32::YELLOW),
+                                    );
                                 });
                                 row.col(|ui| {
                                     ui.label(egui::RichText::new("Open settings dialog").size(20.));
@@ -213,7 +229,11 @@ impl eframe::App for app::HanziApp {
                             });
                             body.row(20., |mut row| {
                                 row.col(|ui| {
-                                    ui.label(egui::RichText::new("Cmd/Ctrl+B").size(20.));
+                                    ui.label(
+                                        egui::RichText::new(if self.is_macos { "Cmd+B" } else { "Ctrl+B" })
+                                            .size(20.)
+                                            .color(egui::Color32::YELLOW),
+                                    );
                                 });
                                 row.col(|ui| {
                                     ui.label(egui::RichText::new("Open about dialog").size(20.));

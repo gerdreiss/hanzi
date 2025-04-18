@@ -19,7 +19,6 @@ pub(crate) struct HanziApp {
     pub(crate) database_url: String,
     pub(crate) toasts: Toasts,
     pub(crate) spinner: ModalSpinner,
-    pub(crate) is_macos: bool,
     pub(crate) phrase_input: String,
     pub(crate) translation_input: String,
     pub(crate) pinyin_input: String,
@@ -31,6 +30,7 @@ pub(crate) struct HanziApp {
     pub(crate) open_about: bool,
     pub(crate) open_help: bool,
     pub(crate) edit_result: bool,
+    pub(crate) is_macos: bool,
 }
 
 impl HanziApp {
@@ -62,7 +62,6 @@ impl HanziApp {
             spinner: ModalSpinner::new()
                 .spinner_size(60.)
                 .spinner_color(egui::Color32::YELLOW),
-            is_macos: cc.egui_ctx.os() == OperatingSystem::Mac,
             phrase_input: String::new(),
             translation_input: String::new(),
             pinyin_input: String::new(),
@@ -74,6 +73,7 @@ impl HanziApp {
             open_about: false,
             open_help: false,
             edit_result: false,
+            is_macos: cc.egui_ctx.os() == OperatingSystem::Mac,
         }
     }
 }
@@ -141,7 +141,7 @@ impl HanziApp {
             .show_progress_bar(true);
     }
 
-    pub(crate) fn read_phrases(&mut self) {
+    pub(crate) fn load_phrases(&mut self) {
         match persistence::read::phrases(&self.database_url, &self.phrase_input) {
             Ok(phrases) => {
                 if phrases.is_empty() {

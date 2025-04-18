@@ -10,8 +10,8 @@ pub(crate) fn find(is_macos: bool) -> egui::KeyboardShortcut {
     egui::KeyboardShortcut::new(modifiers(is_macos), egui::Key::F)
 }
 
-pub(crate) fn learn(is_macos: bool) -> egui::KeyboardShortcut {
-    egui::KeyboardShortcut::new(modifiers(is_macos), egui::Key::L)
+pub(crate) fn exercise(is_macos: bool) -> egui::KeyboardShortcut {
+    egui::KeyboardShortcut::new(modifiers(is_macos), egui::Key::X)
 }
 
 pub(crate) fn settings(is_macos: bool) -> egui::KeyboardShortcut {
