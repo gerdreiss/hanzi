@@ -9,8 +9,8 @@ mod shortcuts;
 mod transform;
 mod ui;
 
-use diesel_migrations::EmbeddedMigrations;
 use diesel_migrations::embed_migrations;
+use diesel_migrations::EmbeddedMigrations;
 
 const MIGRATIONS: EmbeddedMigrations = embed_migrations!("./migrations");
 
