@@ -80,8 +80,10 @@ impl eframe::App for app::HanziApp {
                     ui.horizontal(|ui| {
                         ui.label("Powered by");
                         egui::Hyperlink::from_label_and_url("Rust", "https://www.rust-lang.org/").ui(ui);
-                        ui.label("and");
+                        ui.label(",");
                         egui::Hyperlink::from_label_and_url("egui", "https://github.com/emilk/egui").ui(ui);
+                        ui.label("and");
+                        egui::Hyperlink::from_label_and_url("Ollama", "https://ollama.com/").ui(ui);
                         ui.separator();
                         ui.label("Push F1 to open usage instructions");
                     });
