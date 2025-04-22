@@ -18,6 +18,7 @@ impl eframe::App for app::HanziApp {
                             .text_color(egui::Color32::YELLOW)
                             .margin(egui::Margin::same(16))
                             .font(egui::FontId::new(64., egui::FontFamily::Proportional))
+                            .hint_text("Enter Chinese text here and hit Enter")
                             .ui(ui)
                     },
                 );
@@ -79,13 +80,11 @@ impl eframe::App for app::HanziApp {
                 ui.with_layout(egui::Layout::bottom_up(egui::Align::Center), |ui| {
                     ui.horizontal(|ui| {
                         ui.label("Powered by");
-                        egui::Hyperlink::from_label_and_url("Rust", "https://www.rust-lang.org/").ui(ui);
-                        ui.label(",");
                         egui::Hyperlink::from_label_and_url("egui", "https://github.com/emilk/egui").ui(ui);
                         ui.label("and");
-                        egui::Hyperlink::from_label_and_url("Ollama", "https://ollama.com/").ui(ui);
+                        egui::Hyperlink::from_label_and_url("ollama", "https://ollama.com/").ui(ui);
                         ui.separator();
-                        ui.label("Push F1 to open usage instructions");
+                        ui.label("Push F1 to see usage instructions");
                     });
                     ui.separator();
                 });
@@ -174,7 +173,7 @@ impl eframe::App for app::HanziApp {
                                     ui.label(egui::RichText::new("F1").size(20.).color(egui::Color32::YELLOW));
                                 });
                                 row.col(|ui| {
-                                    ui.label(egui::RichText::new("This help dialog").size(20.));
+                                    ui.label(egui::RichText::new("Opens this help dialog").size(20.));
                                 });
                             });
                             body.row(20., |mut row| {
