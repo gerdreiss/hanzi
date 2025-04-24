@@ -1,6 +1,6 @@
-use eframe::CreationContext;
 use eframe::epaint::text::FontInsert;
 use eframe::epaint::text::InsertFontFamily;
+use eframe::CreationContext;
 use egui::os::OperatingSystem;
 use egui_modal_spinner::ModalSpinner;
 use egui_notify::Anchor;
@@ -208,6 +208,11 @@ impl HanziApp {
     pub(crate) fn edit(&mut self) {
         if self.edit_result {
             self.edit_result = false;
+            self.phrase = Some(model::Phrase {
+                original: self.phrase_input.clone(),
+                pinyin: self.pinyin_input.clone(),
+                translation: self.translation_input.clone(),
+            });
             self.translation_input = String::new();
             self.pinyin_input = String::new();
         } else if let Some(p) = &self.phrase {
